@@ -1,0 +1,17 @@
+
+{
+	"name":"CAD",
+	"repository":"https://github.com/FabMo/fabmo-cad-app.git",
+	"license":"MIT",
+	"main":"./index.html",
+	"icon":"icon.png",
+	"icon_color":"#fff",
+	"version":"0.1.0",
+	"author":"Jonathan Ward",
+	"website":"http://gofabmo.org/fabmo-cad-app",
+	"description":"CAD",
+	"devDependencies": {
+    	"grunt": "^0.4.5",
+    	"grunt-zip": "^0.17.1"
+  	}
+}
