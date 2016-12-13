@@ -49,11 +49,13 @@ body{
 }
 
 #make{
-	display:none;
 	position:absolute;
 	right:5px;
 	bottom:5px;	
-	width:80px;
+	width:60px;
+	height:50px;
+	border-radius:8px;
+	background:rgba(200,200,200,0.5);
 }
 
 #clear{
