@@ -47,7 +47,7 @@ var gridSpace = 20 //units
 var gridIncrement = 10//precision
 var stockX = 50
 var stockY = 25
-var unit = "inch"
+var unit = "inches"
 
 var sf = 1
 var zoom = 4
@@ -67,6 +67,7 @@ line \'x start\',\'y start',\'x end\',\'y end\' \n\
 line \'x end\',\'y end\'\n\
 sbp \'sbp command\'\n\
 g \'gcode\'\n\
+unit=\'inch\',\",\'cm\'\n\
 "
 
 function draw(){
@@ -146,7 +147,19 @@ function draw(){
 	ctx.lineWidth = 1
 	ctx.fillStyle='#fff'
 	ctx.beginPath()
+
+	ctx.strokeStyle='#333'
+	ctx.moveTo(mouseX,mouseY-(gridSpace/4*sf))
+	ctx.lineTo(mouseX,mouseY+(gridSpace/4*sf))
+	ctx.moveTo(mouseX-(gridSpace/4*sf),mouseY)
+	ctx.lineTo(mouseX+(gridSpace/4*sf),mouseY)
+	ctx.stroke()
+
+	ctx.beginPath()
+	ctx.strokeStyle='#000'
+	ctx.moveTo(mouseX,mouseY)
 	ctx.arc(mouseX,mouseY,1*sf,0,Math.PI*2)
+	
 	if(lines.length>0){
 		if(lines[lines.length-1].length==2){
 			ctx.moveTo(point[0]*sf*gridSpace,0-point[1]*sf*gridSpace)
@@ -200,11 +213,23 @@ $("#text-area").keyup(function(e){
 		
 		if(cmd.substring(0,4)=="line"){
 			pts = cmd.substring(4).split(',')
-			//console.log(pts)
 			line(pts)
 		}
+		else if((cmd=="unit") && (cmd.length==4)){
+			cmd=unit
+		}
+		else if(cmd.substring(0,5)=="unit="){
+			cmd=cmd.substring(5,cmd.length)
+			if((cmd =='cm') || (cmd =='CM')){
+				unit = 'cm'
+				cmd='unit=cm'
+			}
+			else if((cmd =='inch')||(cmd=="\"")){
+				unit = 'inch'
+				cmd='unit=inch'
+			}
+		}
 		else if(cmd=="clear"){
-			//console.clear()
 			clearAll()
 		}
 		else if(cmd == "undo"){
@@ -264,19 +289,19 @@ $("body").keydown(function(e){
 
 	if(e.keyCode == 37){
 		//console.log("left")
-		panX-=gridSpace*sf
+		panX-=gridSpace/2*sf
 	}
 	else if(e.keyCode == 38){
 		//console.log("up")
-		panY-=gridSpace*sf
+		panY-=gridSpace/2*sf
 	}
 	else if(e.keyCode == 39){
 		//console.log("right")
-		panX+=gridSpace*sf
+		panX+=gridSpace/2*sf
 	}
 	else if(e.keyCode == 40){
 		//console.log("down")
-		panY+=gridSpace*sf
+		panY+=gridSpace/2*sf
 	}
 	else if(e.keyCode == 90){
 		//console.log("zoom extents")

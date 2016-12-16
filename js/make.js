@@ -43,10 +43,23 @@ function make(){
 
 		}
 	}
-	console.log(xmin,ymin)
-	console.log(xmax,ymax)
-	console.log(unit)
-	console.log(lines)
+	//console.log(xmin,ymin)
+	//console.log(xmax,ymax)
+	//console.log(unit)
+	//console.log(lines)
+	var sbp = ""
+
+	sbp+="MS," + 0.5 + "," + 0.25 + "\n"
+	sbp+="JZ,0.2\n"
+	spb+="SO,1,1\n"
+	sbp+="PAUSE 5\n"
+
+	for(i=0;i<lines.length;i++){
+
+
+	}
+
+
 
 
 }
