@@ -51,13 +51,25 @@ function make(){
 
 	sbp+="MS," + 0.5 + "," + 0.25 + "\n"
 	sbp+="JZ,0.2\n"
-	spb+="SO,1,1\n"
-	sbp+="PAUSE 5\n"
+	sbp+="SO,1,1\n"
+	sbp+="PAUSE 3\n"
 
 	for(i=0;i<lines.length;i++){
-
-
+		sbp+="J2,"+lines[i][0]+","+lines[i][1]+"\n"
+		sbp+="MZ,-0.1\n"
+		sbp+="M2,"+lines[i][2]+","+lines[i][3]+"\n"
+		sbp+="JZ,0.2\n"
 	}
+
+	sbp+="JZ,0.2\n"
+	sbp+="SO,1,0\n"
+
+	fabmo.submitJob({
+	   file : sbp,
+	   filename : 'cad.sbp',
+	   name : 'cad',
+		description : unit 
+	})
 
 
 
