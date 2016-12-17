@@ -33,7 +33,6 @@
 
 //TODO
 //
-//make toolpath/cut button
 //stock/unit command
 //sbp commands
 //g commands
@@ -66,12 +65,10 @@ var panEnd = new Object()
 var mousePanX = 0 
 var mousePanY = 0
 
-var cursor = true
-
 var lines = []
 
 var help="\
-arrow keys (pan)\n\
+touch hold (pan)\n\
 mouse wheel (zoom)\n\
 clear (clear drawing)\n\
 line \'x start\',\'y start',\'x end\',\'y end\' \n\
@@ -86,9 +83,6 @@ $("#cad-canvas").on('mousewheel',function(e){
 	e.preventDefault()
 
 	zoom = parseFloat((zoom+(e.deltaY)/10).toFixed(3))
-	
-	//console.log(e.deltaY)
-	//console.log(zoom)
 
 	if(zoom<0.1){
 		zoom = 0.1
@@ -96,7 +90,6 @@ $("#cad-canvas").on('mousewheel',function(e){
 	else if(zoom>30){
 		zoom = 30
 	}
-	//console.log(zoom)
 	draw()
 })
 
@@ -225,7 +218,6 @@ $("#cad-canvas").on('click',function(e){
 
 	x = Math.round(((e.originalEvent.clientX-ctx.canvas.width/2)/gridSpace/sf)-panX/gridSpace/sf)
 	y = 0-(Math.round(((e.originalEvent.clientY-ctx.canvas.height/2)/gridSpace/sf)-panY/gridSpace/sf))
-	//console.log(x,y)
 	
 	if(lines.length==0){
 		point=[x,y]
@@ -239,7 +231,6 @@ $("#cad-canvas").on('click',function(e){
 		lines[lines.length-1].push(x)
 		lines[lines.length-1].push(y)
 		point=[x,y]
-		//console.log(lines)
 	}
 	
 	draw()
@@ -253,17 +244,24 @@ $("#cad-canvas").on('touchstart mousedown', function(e) {
 
 	ts=e.timeStamp
 	pan=true
-	panStart.x=e.clientX
-	panStart.y=e.clientY
 
+	if(e.type=='touchstart'){
+		console.log('touchstart')
+		panStart.x=e.originalEvent.touches[0].clientX
+		panStart.y=e.originalEvent.touches[0].clientY
+	}
+	else{
+		
+		panStart.x=e.clientX
+		panStart.y=e.clientY
+	}
 
 })
 
 
 $("#cad-canvas").on('touchend mouseup', function(e) {
 
-	pan=false
-	
+	pan=false	
 	panX+=mousePanX
 	panY+=mousePanY
 	mousePanX=0
@@ -281,13 +279,20 @@ $("#cad-canvas").on('touchmove mousemove', function(e) {
 	mouseX = (Math.round(((e.originalEvent.clientX-ctx.canvas.width/2)/gridSpace/sf)-panX/gridSpace/sf)*sf*gridSpace)
 	mouseY = (Math.round(((e.originalEvent.clientY-ctx.canvas.height/2)/gridSpace/sf)-panY/gridSpace/sf)*sf*gridSpace)
 	}
-	
 
 	if((e.timeStamp-ts)>150){
 
 		if(pan==true){
+
+
+		if(e.type=='touchmove'){
+			panEnd.x=e.originalEvent.touches[0].clientX
+			panEnd.y=e.originalEvent.touches[0].clientY
+		}
+		else{
 			panEnd.x=e.clientX
 			panEnd.y=e.clientY
+		}
 
 			mousePanX=0-(panStart.x-panEnd.x)
 			mousePanY=0-(panStart.y-panEnd.y)
@@ -300,10 +305,7 @@ $("#cad-canvas").on('touchmove mousemove', function(e) {
 })
 
 
-$('#text-area').focus()
-
-
-
+//$('#text-area').focus()
 
 
 </script>

@@ -104,8 +104,5 @@ function draw(){
 	ctx.stroke()
 	ctx.fill()
 
-	
-	
-
 
 }
