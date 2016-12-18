@@ -45,33 +45,53 @@ function draw(){
 
 	ctx.translate(ctx.canvas.width/2,ctx.canvas.height/2)
 
+
+
+
+
 	//lines
 	ctx.lineWidth=3*sf
-	ctx.strokeStyle='#000'
+	ctx.strokeStyle='#333'
 	for(i=0;i<lines.length;i++){
 		ctx.beginPath()
 		ctx.moveTo(lines[i][0]*gridSpace*sf,0-lines[i][1]*gridSpace*sf)
-		if(lines[i].length==4){
-		ctx.lineTo(lines[i][2]*gridSpace*sf,0-lines[i][3]*gridSpace*sf)
+		if(lines[i].length>2){
+			for(j=2;j<lines[i].length;j+=2){
+				ctx.lineTo(lines[i][j]*gridSpace*sf,0-lines[i][j+1]*gridSpace*sf)
+			}
 		}
 		ctx.stroke()
 	}
 
-	//point
+	//polygons
+	ctx.lineWidth=1*sf
+	ctx.strokeStyle='#ff00ff'
+	for(i=0;i<polygons.length;i++){
+		ctx.beginPath()
+		for(j=0;j<polygons[i].length;j++){
+			ctx.lineTo(polygons[i][j].X*gridSpace*sf,0-(polygons[i][j].Y*gridSpace*sf))
+		}
+		ctx.stroke()
+	}
+
+
+	//start end point
 	if(lines.length==0){
 
 	}
-	else if(lines[lines.length-1].length==4){
+	else if(lines[lines.length-1].length>2){
 		ctx.fillStyle='#ff0000'
 	}
 	else{
 		ctx.fillStyle='#00ff00'
 	}
+
 	if(lines.length>0){
 		ctx.beginPath()
 		ctx.arc(point[0]*sf*gridSpace,0-point[1]*sf*gridSpace,3*sf,0,Math.PI*2)
 		ctx.fill()
 	}
+	//
 
 	ctx.lineWidth = 1
 	ctx.fillStyle='#fff'
@@ -88,7 +108,7 @@ function draw(){
 	ctx.stroke()
 
 	ctx.beginPath()
-	ctx.strokeStyle='#000'
+	ctx.strokeStyle='#333'
 	ctx.moveTo(mouseX,mouseY)
 	ctx.arc(mouseX,mouseY,1*sf,0,Math.PI*2)
 	
