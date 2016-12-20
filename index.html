@@ -51,9 +51,8 @@ var fabmo = new FabMoDashboard()
 
 var gridSpace = 20 //units
 var gridIncrement = 10//precision
-var stockX = 50
-var stockY = 25
 var units = "inches"
+var stock = []
 
 var sf = 1
 var zoom = 4
@@ -77,14 +76,15 @@ var polygons = []
 
 
 var help="\
-touch hold (pan)\n\
-mouse wheel (zoom)\n\
-clear (clear drawing)\n\
-line \'x start\',\'y start',\'x end\',\'y end\' \n\
-line \'x end\',\'y end\'\n\
-sbp \'sbp command\'\n\
-g \'gcode\'\n\
-units=\'inch\',\",\'cm\'\n\
+clear = new drawing<br>\n\
+mouse wheel = zoom<br>\n\
+stock=\'x\',\'y\'<br>\n\
+touch hold = pan<br>\n\
+units=\'inch\',\",\'cm\'<br>\n\
+g,\'gcode\'\n\
+sbp,\'sbp command\'<br>\n\
+line \'x1\',\'y1',\'x2\',\'y2\' <br>\n\
+line \'x2\',\'y2\'<br>\n\
 "
 
 
@@ -118,8 +118,13 @@ $("#text-area").keyup(function(e){
 				cmd='units=inch'
 			}
 		}
-		else if(cmd=="circle"){
-			circle()	
+		else if(cmd.substring(0,6)=="circle"){
+			pts = cmd.substring(6).split(',')
+			circle(pts)	
+		}
+		else if(cmd.substring(0,6)=="stock="){
+			pts = cmd.substring(6).split(',')			
+			defineStock(pts)	
 		}
 		else if(cmd=="makepath"){
 			makePath()
@@ -137,8 +142,16 @@ $("#text-area").keyup(function(e){
 			
 		}
 		else if(cmd == "?" || "help"){
+			d = new Date()
 			console.log(help)
 			cmd = "console.log(help)"
+			if(fabmo.isPresent()==true){
+				fabmo.notify('info',help + d.toDateString())
+			}
+			else{
+				help = help.replace(/<br>/g,'')
+				alert(help)
+			}
 		}
 		else{
 			cmd = "FabMo CAD \(enter \'?\' for help\)"
@@ -149,6 +162,9 @@ $("#text-area").keyup(function(e){
 		draw()		
 	}
 })
+
+
+//////////////////////////////
 
 function undo(){
 	lines.pop()
@@ -164,6 +180,7 @@ function clearAll(){
 	//console.log('clear')
 	lines=[]
 	polygons=[]
+	stock=[]
 	point=[0,0]
 	zoom=4
 	panX=0
@@ -186,17 +203,30 @@ function line(pts){
 
 }
 
-function circle(){
+function circle(pts){
 	lines.push([])
-	v=50
-	r=1
+
+	Cx=parseFloat(pts[0])
+	Cy=parseFloat(pts[1])
+	r=parseFloat(pts[2])
+	v=Math.ceil(r*2*Math.PI*30)
+	console.log(v)
+
 	for(i=0;i<=v;i++){
-		lines[lines.length-1].push((0)+Math.sin((Math.PI*2)/v*i)*r)
-		lines[lines.length-1].push((0)+Math.cos((Math.PI*2)/v*i)*r)
+		lines[lines.length-1].push((Cx)+Math.sin((Math.PI*2)/v*i)*r)
+		lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*i)*r)
 	}
-	point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
+	point=[Cx,Cy]
+	//point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
 }
 
+function defineStock(pts){
+	panX-=(pts[0]/2)*gridSpace*sf
+	panY+=(pts[1]/2)*gridSpace*sf
+	stock.push(parseFloat(pts[0]),parseFloat(pts[1]))
+	//console.log(stock)
+
+}
 
 function makePath(){
 	paths=[]
@@ -254,7 +284,7 @@ function makePath(){
 
 	}
 
-	console.log(polygons)
+	//console.log(polygons)
 
 	for(i=0;i<polygons.length;i++){
 		var orientation = ClipperLib.Clipper.Orientation(polygons[i])
@@ -286,9 +316,10 @@ function makePath(){
 	}
 	//console.log(polygons)
 	draw()
-	
-
 }
+
+
+//////////////////////////////
 
 $("body").keydown(function(e){
 
@@ -358,7 +389,7 @@ $("#cad-canvas").on('touchstart mousedown', function(e) {
 		console.log('touchstart')
 		if(e.originalEvent.touches.length==2){
 			pan=false
-			console.log(zoom)
+			//console.log(zoom)
 			zoomStart = Math.sqrt((e.originalEvent.touches[0].clientX-e.originalEvent.touches[1].clientX) * (e.originalEvent.touches[0].clientX-e.originalEvent.touches[1].clientX) + (e.originalEvent.touches[0].clientY-e.originalEvent.touches[1].clientY) * (e.originalEvent.touches[0].clientY-e.originalEvent.touches[1].clientY))
 		}
 		else{
@@ -419,7 +450,7 @@ $("#cad-canvas").on('touchmove mousemove', function(e) {
 		//zoom
 		if(pan==false){
 			if(e.originalEvent.touches.length==2){
-				console.log(zoom)
+				//console.log(zoom)
 				dist = Math.sqrt((e.originalEvent.touches[0].clientX-e.originalEvent.touches[1].clientX) * (e.originalEvent.touches[0].clientX-e.originalEvent.touches[1].clientX) + (e.originalEvent.touches[0].clientY-e.originalEvent.touches[1].clientY) * (e.originalEvent.touches[0].clientY-e.originalEvent.touches[1].clientY))
 				if((parseFloat(zoomStart/dist))<1){
 					zoom+=0.1
@@ -453,10 +484,12 @@ $("#cad-canvas").on('mousewheel',function(e){
 	else if(zoom>10){
 		zoom = 10
 	}
-	console.log(zoom)
+	//console.log(zoom)
 	draw()
 })
 
+//handibot
+//defineStock([5,8])
 
 //$('#text-area').focus()
 

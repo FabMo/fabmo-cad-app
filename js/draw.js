@@ -45,7 +45,13 @@ function draw(){
 
 	ctx.translate(ctx.canvas.width/2,ctx.canvas.height/2)
 
-
+	//stock
+	if(stock.length>0){
+		ctx.fillStyle='rgba(0,200,0,0.1)'
+		ctx.beginPath()
+		ctx.rect(0,0,(stock[0])*gridSpace*sf,(0-stock[1])*gridSpace*sf)
+		ctx.fill()
+	}
 
 
 
@@ -121,7 +127,6 @@ function draw(){
 			ctx.arc(point[0]*sf*gridSpace,0-point[1]*sf*gridSpace,1*sf,0,Math.PI*2)
 			ctx.moveTo(point[0]*sf*gridSpace,0-point[1]*sf*gridSpace)
 			ctx.lineTo(mouseX,mouseY)
-			
 		}
 	}
 	ctx.stroke()
