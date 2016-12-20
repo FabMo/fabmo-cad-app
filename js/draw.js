@@ -64,7 +64,7 @@ function draw(){
 	}
 
 	//polygons
-	ctx.lineWidth=1*sf
+	ctx.lineWidth=0.8*sf
 	ctx.strokeStyle='#ff00ff'
 	for(i=0;i<polygons.length;i++){
 		ctx.beginPath()
@@ -76,6 +76,8 @@ function draw(){
 
 
 	//start end point
+	ctx.lineWidth=0.4*sf
+	ctx.strokeStyle='#333'
 	if(lines.length==0){
 
 	}
@@ -90,6 +92,7 @@ function draw(){
 		ctx.beginPath()
 		ctx.arc(point[0]*sf*gridSpace,0-point[1]*sf*gridSpace,3*sf,0,Math.PI*2)
 		ctx.fill()
+		ctx.stroke()
 	}
 	//
 

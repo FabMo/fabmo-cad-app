@@ -2,10 +2,10 @@
 
 <! jward 2016 >
 
-<html lang="en"> 
+<html lang="en">
 <head>
 	<title>CAD</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8"/>
+	<meta name="viewport" content="user-scalable=no" charset="utf-8"/>
 	<link href="css/style.css" rel="stylesheet">
 	<script src="js/libs/jquery-3.1.1.min.js"></script>
 	<script src="js/libs/jquery.mousewheel.min.js"></script>
@@ -53,7 +53,7 @@ var gridSpace = 20 //units
 var gridIncrement = 10//precision
 var stockX = 50
 var stockY = 25
-var unit = "inches"
+var units = "inches"
 
 var sf = 1
 var zoom = 4
@@ -69,13 +69,11 @@ var panEnd = new Object()
 var mousePanX = 0 
 var mousePanY = 0
 
-]
-
 var point = [0,0] //current point
 
 var lines = []
 
-var polygons = [
+var polygons = []
 
 
 var help="\
@@ -86,26 +84,12 @@ line \'x start\',\'y start',\'x end\',\'y end\' \n\
 line \'x end\',\'y end\'\n\
 sbp \'sbp command\'\n\
 g \'gcode\'\n\
-unit=\'inch\',\",\'cm\'\n\
+units=\'inch\',\",\'cm\'\n\
 "
 
 
-$("#cad-canvas").on('mousewheel',function(e){
-	e.preventDefault()
+//commands
 
-	zoom = parseFloat((zoom+(e.deltaY)/10).toFixed(3))
-
-	if(zoom<0.1){
-		zoom = 0.1
-	}
-	else if(zoom>30){
-		zoom = 30
-	}
-	draw()
-})
-
-
-//command line 
 $("#text-area").keyup(function(e){
 
 	var cmd = document.getElementById('text-area').value
@@ -120,19 +104,22 @@ $("#text-area").keyup(function(e){
 			pts = cmd.substring(4).split(',')
 			line(pts)
 		}
-		else if((cmd=="unit") && (cmd.length==4)){
-			cmd=unit
+		else if((cmd=="units") && (cmd.length==5)){
+			cmd=units
 		}
-		else if(cmd.substring(0,5)=="unit="){
-			cmd=cmd.substring(5,cmd.length)
+		else if(cmd.substring(0,6)=="units="){
+			cmd=cmd.substring(6,cmd.length)
 			if((cmd =='cm') || (cmd =='CM')){
-				unit = 'cm'
-				cmd='unit=cm'
+				units = 'cm'
+				cmd='units=cm'
 			}
 			else if((cmd =='inch')||(cmd=="\"")){
-				unit = 'inch'
-				cmd='unit=inch'
+				units = 'inch'
+				cmd='units=inch'
 			}
+		}
+		else if(cmd=="circle"){
+			circle()	
 		}
 		else if(cmd=="makepath"){
 			makePath()
@@ -141,20 +128,13 @@ $("#text-area").keyup(function(e){
 			clearAll()
 		}
 		else if(cmd == "undo"){
-			lines.pop()
-			if(lines.length>0){
-				point = [lines[lines.length-1][2],lines[lines.length-1][3]]
-			}
-			else{
-				point=[0,0]
-			}
-			draw()
+			undo()
 		}
 		else if(cmd == "z"){
 			zoom=4
 			panX=0
 			panY=0
-			draw()
+			
 		}
 		else if(cmd == "?" || "help"){
 			console.log(help)
@@ -164,10 +144,21 @@ $("#text-area").keyup(function(e){
 			cmd = "FabMo CAD \(enter \'?\' for help\)"
 		}
 		document.getElementById('text-area').value = cmd + '\n\>\>'
+
+		makePath()
+		draw()		
 	}
 })
 
-
+function undo(){
+	lines.pop()
+	if(lines.length>0){
+		point = [lines[lines.length-1][2],lines[lines.length-1][3]]
+	}
+	else{
+		point=[0,0]
+	}
+}
 
 function clearAll(){
 	//console.log('clear')
@@ -183,8 +174,6 @@ function clearAll(){
 
 function line(pts){
 
-	//single line
-
 	if(pts.length==4){
 		lines.push(pts)
 	}
@@ -194,8 +183,18 @@ function line(pts){
 		lines.push(pts)
 	}
 	point = [lines[lines.length-1][2],lines[lines.length-1][3]]
-	//makePath()
-	draw()
+
+}
+
+function circle(){
+	lines.push([])
+	v=50
+	r=1
+	for(i=0;i<=v;i++){
+		lines[lines.length-1].push((0)+Math.sin((Math.PI*2)/v*i)*r)
+		lines[lines.length-1].push((0)+Math.cos((Math.PI*2)/v*i)*r)
+	}
+	point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
 }
 
 
@@ -213,11 +212,7 @@ function makePath(){
 	}
 
 	polygons = []
-	//polygons.push(paths[0])
-	//paths.splice(0,1)
 
-	//search endpoint/startpoint
-	//find single path first
 	while(paths.length>0){
 
 	polygons.push(paths[0])
@@ -336,7 +331,7 @@ $("#cad-canvas").on('click',function(e){
 		point=[x,y]
 		lines.push([x,y])
 	}
-	else if(lines[lines.length-1].length==4){
+	else if(lines[lines.length-1].length>=4){
 		point=[x,y]
 		lines.push([x,y])
 	}
@@ -346,7 +341,6 @@ $("#cad-canvas").on('click',function(e){
 		point=[x,y]
 	}
 	//
-
 	makePath()
 	draw()
 	}
@@ -362,8 +356,15 @@ $("#cad-canvas").on('touchstart mousedown', function(e) {
 
 	if(e.type=='touchstart'){
 		console.log('touchstart')
-		panStart.x=e.originalEvent.touches[0].clientX
-		panStart.y=e.originalEvent.touches[0].clientY
+		if(e.originalEvent.touches.length==2){
+			pan=false
+			console.log(zoom)
+			zoomStart = Math.sqrt((e.originalEvent.touches[0].clientX-e.originalEvent.touches[1].clientX) * (e.originalEvent.touches[0].clientX-e.originalEvent.touches[1].clientX) + (e.originalEvent.touches[0].clientY-e.originalEvent.touches[1].clientY) * (e.originalEvent.touches[0].clientY-e.originalEvent.touches[1].clientY))
+		}
+		else{
+			panStart.x=e.originalEvent.touches[0].clientX
+			panStart.y=e.originalEvent.touches[0].clientY
+		}
 	}
 	else{
 		
@@ -391,14 +392,13 @@ $("#cad-canvas").on('touchmove mousemove', function(e) {
 	e.preventDefault()
 
 	if(pan==false){
-	mouseX = (Math.round(((e.originalEvent.clientX-ctx.canvas.width/2)/gridSpace/sf)-panX/gridSpace/sf)*sf*gridSpace)
-	mouseY = (Math.round(((e.originalEvent.clientY-ctx.canvas.height/2)/gridSpace/sf)-panY/gridSpace/sf)*sf*gridSpace)
+		mouseX = (Math.round(((e.originalEvent.clientX-ctx.canvas.width/2)/gridSpace/sf)-panX/gridSpace/sf)*sf*gridSpace)
+		mouseY = (Math.round(((e.originalEvent.clientY-ctx.canvas.height/2)/gridSpace/sf)-panY/gridSpace/sf)*sf*gridSpace)
 	}
 
 	if((e.timeStamp-ts)>180){
 
 		if(pan==true){
-
 
 		if(e.type=='touchmove'){
 			panEnd.x=e.originalEvent.touches[0].clientX
@@ -415,8 +415,46 @@ $("#cad-canvas").on('touchmove mousemove', function(e) {
 		}
 
 	}
+	else if(e.type=='touchmove'){
+		//zoom
+		if(pan==false){
+			if(e.originalEvent.touches.length==2){
+				console.log(zoom)
+				dist = Math.sqrt((e.originalEvent.touches[0].clientX-e.originalEvent.touches[1].clientX) * (e.originalEvent.touches[0].clientX-e.originalEvent.touches[1].clientX) + (e.originalEvent.touches[0].clientY-e.originalEvent.touches[1].clientY) * (e.originalEvent.touches[0].clientY-e.originalEvent.touches[1].clientY))
+				if((parseFloat(zoomStart/dist))<1){
+					zoom+=0.1
+				}
+				else{
+					zoom+=-0.1
+				}
+			
+				//min/max
+				if(zoom<0.8){
+					zoom = 0.8
+				}
+				else if(zoom>10){
+					zoom = 10
+				}
+			}
+		}
+	}
 	draw()
 
+})
+
+$("#cad-canvas").on('mousewheel',function(e){
+	e.preventDefault()
+
+	zoom = parseFloat((zoom+(e.deltaY)/10).toFixed(3))
+
+	if(zoom<0.8){
+		zoom = 0.8
+	}
+	else if(zoom>10){
+		zoom = 10
+	}
+	console.log(zoom)
+	draw()
 })
 
 
