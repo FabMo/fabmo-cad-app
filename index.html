@@ -33,11 +33,7 @@
 
 //TODO
 //
-//geometry type,center,rotation[x,y]
 //
-
-//
-//stock/unit command
 //sbp commands
 //g commands
 //
@@ -49,8 +45,8 @@ $(window).resize(function(){
 
 var fabmo = new FabMoDashboard()
 
-var gridSpace = 20 //units
-var gridIncrement = 10//precision
+var gridSpace = 20
+var gridIncrement = 10
 var units = "inches"
 var stock = []
 
@@ -68,7 +64,7 @@ var panEnd = new Object()
 var mousePanX = 0 
 var mousePanY = 0
 
-var point = [0,0] //current point
+var point = [0,0]
 
 var lines = []
 
@@ -88,7 +84,7 @@ line \'x2\',\'y2\'<br>\n\
 "
 
 
-//commands
+//cmd
 
 $("#text-area").keyup(function(e){
 
@@ -163,8 +159,6 @@ $("#text-area").keyup(function(e){
 	}
 })
 
-
-//////////////////////////////
 
 function undo(){
 	lines.pop()
@@ -295,8 +289,6 @@ function makePath(){
 
 	paths = ClipperLib.Clipper.SimplifyPolygons(polygons, ClipperLib.PolyFillType.pftNonZero)
 	polygons=paths
-	//change pg dir
-	//var orientation = ClipperLib.Clipper.Orientation(polygon);
 
 	var cpr = new ClipperLib.Clipper()
 	cpr.AddPaths(polygons, ClipperLib.PolyType.ptSubject, true)
@@ -304,8 +296,6 @@ function makePath(){
 	var solution_paths = new ClipperLib.Paths()
 	cpr.Execute(ClipperLib.ClipType.ctUnion, solution_paths, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero);
 	polygons=solution_paths
-
-	//paths = ClipperLib.Clipper.SimplifyPolygons(polygons, ClipperLib.PolyFillType.pftNonZero);
 
 	for(i=0;i<polygons.length;i++){
 		for(j=0;j<polygons[i].length;j++){
@@ -318,8 +308,6 @@ function makePath(){
 	draw()
 }
 
-
-//////////////////////////////
 
 $("body").keydown(function(e){
 
@@ -487,9 +475,6 @@ $("#cad-canvas").on('mousewheel',function(e){
 	//console.log(zoom)
 	draw()
 })
-
-//handibot
-//defineStock([5,8])
 
 //$('#text-area').focus()
 
