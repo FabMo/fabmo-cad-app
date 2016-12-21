@@ -73,12 +73,13 @@ var polygons = []
 
 var help="\
 clear = new drawing<br>\n\
-mouse wheel = zoom<br>\n\
+mousewheel/pinch = zoom<br>\n\
 stock=\'x\',\'y\'<br>\n\
 touch hold = pan<br>\n\
 units=\'inch\',\",\'cm\'<br>\n\
-g,\'gcode\'\n\
+g,\'gcode\<br>'\n\
 sbp,\'sbp command\'<br>\n\
+circle \'x1\',\'y1\',\'r\'<br>\n\
 line \'x1\',\'y1',\'x2\',\'y2\' <br>\n\
 line \'x2\',\'y2\'<br>\n\
 "
@@ -102,6 +103,14 @@ $("#text-area").keyup(function(e){
 		}
 		else if((cmd=="units") && (cmd.length==5)){
 			cmd=units
+		}
+		else if(cmd.substring(0,2)=="g,"){
+			cmd=cmd.substring(2,cmd.length)
+			fabmo.runGCode(cmd)
+		}
+		else if(cmd.substring(0,4)=="sbp,"){
+			cmd=cmd.substring(4,cmd.length)
+			fabmo.runSBP(cmd)
 		}
 		else if(cmd.substring(0,6)=="units="){
 			cmd=cmd.substring(6,cmd.length)
@@ -142,7 +151,7 @@ $("#text-area").keyup(function(e){
 			console.log(help)
 			cmd = "console.log(help)"
 			if(fabmo.isPresent()==true){
-				fabmo.notify('info',help + d.toDateString())
+				fabmo.notify('info',help + '<font style=\'display:none\'>' + d.toLocaleString() + '</font>')
 			}
 			else{
 				help = help.replace(/<br>/g,'')
