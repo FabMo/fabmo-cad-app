@@ -71,4 +71,15 @@ body{
 	color:#000;
 }
 
+#undo{
+	position:absolute;
+	right:80px;
+	top:5px;	
+	width:60px;
+	height:50px;
+	border-radius:8px;
+	background:rgba(200,200,200,0.5);
+	color:#000;
+}
+
 

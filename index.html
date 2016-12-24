@@ -15,7 +15,7 @@
 	<script src="js/make.js"></script>
 </head>
 
-<body onload="draw()">
+<body onload=" draw(); defineStock([12,12]);">
 
 <canvas id="cad-canvas"></canvas>
 
@@ -26,6 +26,7 @@
 
 <input type="submit" id="make" value="make" onclick="make()"/>
 <input type="submit" id="clear" value="clear" onclick="clearAll()"/>
+<input type="submit" id="undo" value="undo" onclick="undo()"/>
 </body>
 
 <script>
@@ -33,9 +34,7 @@
 
 //TODO
 //
-//
-//sbp commands
-//g commands
+//rectangle and polygon commands
 //
 //
 
@@ -49,9 +48,10 @@ var gridSpace = 20
 var gridIncrement = 10
 var units = "inches"
 var stock = []
+var tool = 0.125 //inch
 
 var sf = 1
-var zoom = 4
+var zoom = 2
 var panX = 0
 var panY = 0
 
@@ -69,23 +69,27 @@ var point = [0,0]
 var lines = []
 
 var polygons = []
+var pockets = []
 
 
 var help="\
-clear = new drawing<br>\n\
-mousewheel/pinch = zoom<br>\n\
-stock=\'x\',\'y\'<br>\n\
-touch hold = pan<br>\n\
-units=\'inch\',\",\'cm\'<br>\n\
-g,\'gcode\<br>'\n\
-sbp,\'sbp command\'<br>\n\
 circle \'x1\',\'y1\',\'r\'<br>\n\
+clear \'new drawing\'<br>\n\
+g,\'gcode\'<br>\n\
 line \'x1\',\'y1',\'x2\',\'y2\' <br>\n\
 line \'x2\',\'y2\'<br>\n\
+mousewheel/pinch \'zoom\'<br>\n\
+pocket\'pocket path\'<br>\n\
+sbp,\'sbp command\'<br>\n\
+stock=\'x\',\'y\'<br>\n\
+touch hold \'pan\'<br>\n\
+units=\'inch\',\",\'cm\'<br>\n\
 "
 
 
 //cmd
+
+
 
 $("#text-area").keyup(function(e){
 
@@ -96,10 +100,20 @@ $("#text-area").keyup(function(e){
 
 		cmd = cmd.replace(/.*?\n\>\>/,'')
 		cmd = cmd.replace(/\n/g,'')
+		cmd = cmd.toLowerCase()
 		
 		if(cmd.substring(0,4)=="line"){
 			pts = cmd.substring(4).split(',')
 			line(pts)
+		}
+		else if(cmd=="pocket"){
+			console.log('pocket')
+			pocket()
+		}
+		else if(cmd.substring(0,4)=="star"){
+			console.log('star')
+			pts = cmd.substring(4).split(',')
+			star(pts)	
 		}
 		else if((cmd=="units") && (cmd.length==5)){
 			cmd=units
@@ -163,6 +177,8 @@ $("#text-area").keyup(function(e){
 		}
 		document.getElementById('text-area').value = cmd + '\n\>\>'
 
+		$("#text-area").blur()
+
 		makePath()
 		draw()		
 	}
@@ -171,24 +187,27 @@ $("#text-area").keyup(function(e){
 
 function undo(){
 	lines.pop()
+	pockets=[]
 	if(lines.length>0){
 		point = [lines[lines.length-1][2],lines[lines.length-1][3]]
 	}
 	else{
 		point=[0,0]
 	}
+	makePath()
 }
 
 function clearAll(){
-	//console.log('clear')
+	stock=[12,12]
 	lines=[]
+	pockets=[]
 	polygons=[]
-	stock=[]
 	point=[0,0]
-	zoom=4
+	zoom=2
 	panX=0
 	panY=0
 	draw()
+	defineStock(stock)
 	$('#clear').blur()
 }
 
@@ -213,7 +232,7 @@ function circle(pts){
 	Cy=parseFloat(pts[1])
 	r=parseFloat(pts[2])
 	v=Math.ceil(r*2*Math.PI*30)
-	console.log(v)
+	//console.log(v)
 
 	for(i=0;i<=v;i++){
 		lines[lines.length-1].push((Cx)+Math.sin((Math.PI*2)/v*i)*r)
@@ -223,12 +242,39 @@ function circle(pts){
 	//point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
 }
 
+function star(pts){
+	lines.push([])
+
+	Cx=parseFloat(pts[0])
+	Cy=parseFloat(pts[1])
+	r=parseFloat(pts[2])
+	v=5
+
+	for(i=0;i<2;i++){
+		j=0
+		while(j<=4){
+			lines[lines.length-1].push((Cx)+Math.sin((Math.PI*2)/v*(i+j))*r)
+			lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*(i+j))*r)
+			j+=2
+		}
+	}
+
+	point=[Cx,Cy]
+	console.log(lines)
+
+}
+
 function defineStock(pts){
-	panX-=(pts[0]/2)*gridSpace*sf
-	panY+=(pts[1]/2)*gridSpace*sf
+	stock=[]
+	if(panX==0){
+		panX-=(pts[0]/2)*gridSpace*sf
+	}
+	if(panY==0){
+		panY+=(pts[1]/2)*gridSpace*sf
+	}
 	stock.push(parseFloat(pts[0]),parseFloat(pts[1]))
 	//console.log(stock)
-
+	draw()
 }
 
 function makePath(){
@@ -315,6 +361,47 @@ function makePath(){
 	}
 	//console.log(polygons)
 	draw()
+}
+
+function pocket(){
+
+pockets=polygons
+var scale = 100
+
+
+for(i=0;i<pockets.length;i++){
+	pockets[i].pop()
+	for(j=0;j<pockets[i].length;j++){		
+	}
+}
+ClipperLib.JS.ScaleUpPaths(pockets, scale)
+var co = new ClipperLib.ClipperOffset(0.25, 0.25)
+co.AddPaths(pockets, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon)
+
+pockets=[]
+o=1
+while(o>0){
+	offset = new ClipperLib.Paths()
+	co.Execute(offset,-(0.125*o) * scale)
+	if(offset.length!=0){
+		o++
+		for(i=0;i<offset.length;i++){
+			pockets.push(offset[i])
+		}
+	}
+	else{
+		o=0
+	}
+}
+
+pockets.reverse()
+
+ClipperLib.JS.ScaleDownPaths(pockets, scale)
+
+console.log(pockets)
+
+draw()
+
 }
 
 
@@ -450,10 +537,10 @@ $("#cad-canvas").on('touchmove mousemove', function(e) {
 				//console.log(zoom)
 				dist = Math.sqrt((e.originalEvent.touches[0].clientX-e.originalEvent.touches[1].clientX) * (e.originalEvent.touches[0].clientX-e.originalEvent.touches[1].clientX) + (e.originalEvent.touches[0].clientY-e.originalEvent.touches[1].clientY) * (e.originalEvent.touches[0].clientY-e.originalEvent.touches[1].clientY))
 				if((parseFloat(zoomStart/dist))<1){
-					zoom+=0.1
+					zoom+=0.05
 				}
 				else{
-					zoom+=-0.1
+					zoom+=-0.05
 				}
 			
 				//min/max
@@ -485,7 +572,7 @@ $("#cad-canvas").on('mousewheel',function(e){
 	draw()
 })
 
-//$('#text-area').focus()
+
 
 
 </script>

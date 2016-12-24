@@ -5,6 +5,8 @@ var ymax = 0
 
 function make(){
 
+	scale = 0.5
+
 	if(lines.length>0){
 		xmin=lines[0][0]
 		ymin=lines[0][1]
@@ -53,22 +55,47 @@ function make(){
 	sbp+="JZ,0.2\n"
 	sbp+="SO,1,1\n"
 	sbp+="PAUSE 3\n"
-
+	
+	/*
 	for(i=0;i<lines.length;i++){
 		sbp+="J2,"+lines[i][0]+","+lines[i][1]+"\n"
 		sbp+="MZ,-0.1\n"
 		sbp+="M2,"+lines[i][2]+","+lines[i][3]+"\n"
 		sbp+="JZ,0.2\n"
 	}
+	*/
 
-	sbp+="JZ,0.2\n"
+	if(pockets.length==0){
+		//on
+		for(i=0;i<polygons.length;i++){
+			sbp+="J2,"+(polygons[i][0].X*scale).toFixed(3) + "," + (polygons[i][0].Y*scale).toFixed(3) +"\n"
+			sbp+="MZ,-0.05\n"
+			for(j=1;j<polygons[i].length;j++){
+				sbp+="M2,"+(polygons[i][j].X*scale).toFixed(3) + "," + (polygons[i][j].Y*scale).toFixed(3) + "\n"
+			}
+			sbp+="JZ,0.2\n"
+		}
+	}
+	else{
+		//pocket
+		for(i=0;i<pockets.length;i++){
+			sbp+="J2,"+(pockets[i][0].X*scale).toFixed(3) + "," + (pockets[i][0].Y*scale).toFixed(3) +"\n"
+			sbp+="MZ,-0.05\n"
+			for(j=1;j<pockets[i].length;j++){
+				sbp+="M2,"+(pockets[i][j].X*scale).toFixed(3) + "," + (pockets[i][j].Y*scale).toFixed(3) + "\n"
+			}
+			sbp+="JZ,0.2\n"
+		}
+	}
+
 	sbp+="SO,1,0\n"
+	sbp+="J2,0,0\n"
 
 	fabmo.submitJob({
 	   file : sbp,
-	   filename : 'cad.sbp',
+	   filename : 'cad.SBP',
 	   name : 'cad',
-		description : unit 
+		description :  ''
 	})
 
 

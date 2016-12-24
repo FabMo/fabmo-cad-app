@@ -57,7 +57,7 @@ function draw(){
 
 	//lines
 	ctx.lineWidth=3*sf
-	ctx.strokeStyle='#333'
+	ctx.strokeStyle='#555'
 	for(i=0;i<lines.length;i++){
 		ctx.beginPath()
 		ctx.moveTo(lines[i][0]*gridSpace*sf,0-lines[i][1]*gridSpace*sf)
@@ -80,6 +80,20 @@ function draw(){
 		ctx.stroke()
 	}
 
+	//pockets
+
+	if(pockets.length>0){
+	ctx.lineWidth=0.4*sf
+	ctx.strokeStyle='#0000ff'
+	for(i=0;i<pockets.length;i++){
+		ctx.beginPath()
+		for(j=0;j<pockets[i].length;j++){
+			ctx.lineTo(pockets[i][j].X*gridSpace*sf,0-(pockets[i][j].Y*gridSpace*sf))
+		}
+		ctx.lineTo(pockets[i][0].X*gridSpace*sf,0-(pockets[i][0].Y*gridSpace*sf))
+		ctx.stroke()
+	}
+	}
 
 	//start end point
 	ctx.lineWidth=0.4*sf
