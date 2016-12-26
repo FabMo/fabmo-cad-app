@@ -15,7 +15,7 @@
 	<script src="js/make.js"></script>
 </head>
 
-<body onload=" draw(); defineStock([12,12]);">
+<body onload=" draw(); defineStock([3,3]);">
 
 <canvas id="cad-canvas"></canvas>
 
@@ -24,6 +24,7 @@
 <input type="submit" id="rectangle" value="rectangle"/>
 <input type="submit" id="circle" value="circle"/>
 
+<font id="grid">grid = 0.25"</font>
 <input type="submit" id="make" value="make" onclick="make()"/>
 <input type="submit" id="clear" value="clear" onclick="clearAll()"/>
 <input type="submit" id="undo" value="undo" onclick="undo()"/>
@@ -46,11 +47,17 @@ var fabmo = new FabMoDashboard()
 
 var gridSpace = 20
 var gridIncrement = 10
-var units = "inches"
+var grid = 4 //1/4"
 var stock = []
-var tool = 0.125 //inch
+var tool = 0.125
+var units = 'inch' //inch or mm
+var scale = 1000   //
+var layer = 0
+var output = 'sbp'
+var cutDepth = -0.05
 
 var sf = 1
+
 var zoom = 2
 var panX = 0
 var panY = 0
@@ -70,27 +77,29 @@ var lines = []
 
 var polygons = []
 var pockets = []
+var cutout = []
 
 
 var help="\
 circle \'x1\',\'y1\',\'r\'<br>\n\
 clear \'new drawing\'<br>\n\
+cutin (offset toolpath in)<br>\n\
+cutout (offset toolpath out)<br>\n\
 g,\'gcode\'<br>\n\
+grid=\'space\'<br>\n\
 line \'x1\',\'y1',\'x2\',\'y2\' <br>\n\
 line \'x2\',\'y2\'<br>\n\
 mousewheel/pinch \'zoom\'<br>\n\
-pocket\'pocket path\'<br>\n\
+pocket (pocket toolpath)<br>\n\
 sbp,\'sbp command\'<br>\n\
 star\'x\',\'y\',\'r\'<br>\n\
 stock=\'x\',\'y\'<br>\n\
-touch hold \'pan\'<br>\n\
-units=\'inch\',\",\'cm\'<br>\n\
+tool=\'d\'<br>\n\
+touch hold (pan)<br>\n\
 "
-
+//units=\'inch\',\",\'cm\'<br>\n\
 
 //cmd
-
-
 
 $("#text-area").keyup(function(e){
 
@@ -105,15 +114,39 @@ $("#text-area").keyup(function(e){
 		
 		if(cmd.substring(0,4)=="line"){
 			pts = cmd.substring(4).split(',')
+			scalePts(pts)
 			line(pts)
+		}
+		else if(cmd.substring(0,5)=="tool="){
+			tool=parseFloat(cmd.substring(5))
+			cmd = 'tool diameter = ' + tool +"\""
+		}
+		else if(cmd.substring(0,5)=="grid="){
+			stock[0]=stock[0]/grid
+			stock[1]=stock[1]/grid
+			grid=1/(parseFloat(cmd.substring(5)))
+			//set zoom
+
+			document.getElementById('grid').innerHTML = 'grid = ' + (parseFloat(cmd.substring(5))) + "\""
+			cmd = 'grid = ' + (parseFloat(cmd.substring(5))) +"\""			
+			defineStock(stock)
 		}
 		else if(cmd=="pocket"){
 			console.log('pocket')
 			pocket()
 		}
+		else if(cmd=="cutout"){
+			console.log('cutout')
+			cutOut(true)
+		}
+		else if(cmd=="cutin"){
+			console.log('cutin')
+			cutOut(false)
+		}
 		else if(cmd.substring(0,4)=="star"){
 			console.log('star')
 			pts = cmd.substring(4).split(',')
+			scalePts(pts)
 			star(pts)	
 		}
 		else if((cmd=="units") && (cmd.length==5)){
@@ -140,6 +173,7 @@ $("#text-area").keyup(function(e){
 		}
 		else if(cmd.substring(0,6)=="circle"){
 			pts = cmd.substring(6).split(',')
+			scalePts(pts)
 			circle(pts)	
 		}
 		else if(cmd.substring(0,6)=="stock="){
@@ -178,7 +212,7 @@ $("#text-area").keyup(function(e){
 		}
 		document.getElementById('text-area').value = cmd + '\n\>\>'
 
-		$("#text-area").blur()
+		//$("#text-area").blur()
 
 		makePath()
 		draw()		
@@ -199,10 +233,11 @@ function undo(){
 }
 
 function clearAll(){
-	stock=[12,12]
+	stock=[3,3]
 	lines=[]
 	pockets=[]
 	polygons=[]
+	cutout=[]
 	point=[0,0]
 	zoom=2
 	panX=0
@@ -210,6 +245,12 @@ function clearAll(){
 	draw()
 	defineStock(stock)
 	$('#clear').blur()
+}
+
+function scalePts(pts){
+	for(i=0;i<pts.length;i++){
+		pts[i]=pts[i]*grid
+	}
 }
 
 function line(pts){
@@ -223,7 +264,6 @@ function line(pts){
 		lines.push(pts)
 	}
 	point = [lines[lines.length-1][2],lines[lines.length-1][3]]
-
 }
 
 function circle(pts){
@@ -239,6 +279,8 @@ function circle(pts){
 		lines[lines.length-1].push((Cx)+Math.sin((Math.PI*2)/v*i)*r)
 		lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*i)*r)
 	}
+
+	console.log(lines)
 	point=[Cx,Cy]
 	//point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
 }
@@ -265,16 +307,21 @@ function star(pts){
 
 }
 
+function zoomExtents(s){
+
+	console.log(s[1]*gridSpace*sf)
+	console.log(ctx.canvas.height)
+
+}
+
+
 function defineStock(pts){
 	stock=[]
-	if(panX==0){
-		panX-=(pts[0]/2)*gridSpace*sf
-	}
-	if(panY==0){
-		panY+=(pts[1]/2)*gridSpace*sf
-	}
-	stock.push(parseFloat(pts[0]),parseFloat(pts[1]))
-	//console.log(stock)
+	
+	panX=0-((pts[0]/2)*grid*gridSpace*sf)
+	panY=(pts[1]/2)*grid*gridSpace*sf
+	stock.push(parseFloat(pts[0]*grid),parseFloat(pts[1]*grid))
+
 	draw()
 }
 
@@ -366,9 +413,9 @@ function makePath(){
 
 function pocket(){
 
-pockets=polygons
-var scale = 100
+cutout=[]
 
+pockets=polygons
 
 for(i=0;i<pockets.length;i++){
 	pockets[i].pop()
@@ -383,7 +430,9 @@ pockets=[]
 o=1
 while(o>0){
 	offset = new ClipperLib.Paths()
-	co.Execute(offset,-(0.125*o) * scale)
+
+	co.Execute(offset,-(tool/2*grid*o) * scale)
+
 	if(offset.length!=0){
 		o++
 		for(i=0;i<offset.length;i++){
@@ -405,6 +454,35 @@ draw()
 
 }
 
+
+function cutOut(out){
+
+pockets=[]
+
+cutout=polygons
+
+for(i=0;i<cutout.length;i++){
+	cutout[i].pop()
+	for(j=0;j<cutout[i].length;j++){		
+	}
+}
+
+ClipperLib.JS.ScaleUpPaths(cutout, scale)
+var co = new ClipperLib.ClipperOffset(0.25, 0.25)
+co.AddPaths(cutout, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon)
+cutout = new ClipperLib.Paths()
+if(out==true){
+	co.Execute(cutout,(tool/2*grid) * scale)
+}
+else if(out==false){
+	co.Execute(cutout,-(tool/2*grid) * scale)
+}
+
+ClipperLib.JS.ScaleDownPaths(cutout, scale)
+
+draw()
+
+}
 
 $("body").keydown(function(e){
 
