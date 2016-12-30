@@ -54,10 +54,23 @@ function draw(){
 	}
 
 
+	//dogbones
+
+	ctx.strokeStyle='#000'
+	for(i=0;i<dogbones.length;i++){
+		ctx.beginPath()
+		for(j=0;j<dogbones[i].length;j+=2){			
+			//ctx.lineTo((dogbones[i][j]*gridSpace*sf),(0-dogbones[i][j+1]*gridSpace*sf))
+		}
+		ctx.stroke()	
+	}
+
+
 
 	//lines
-	ctx.lineWidth=3*sf
-	ctx.strokeStyle='#555'
+	//ctx.setLineDash([2*sf, 3*sf])
+	ctx.lineWidth=0.7*sf
+	ctx.strokeStyle='#666'
 	for(i=0;i<lines.length;i++){
 		ctx.beginPath()
 		ctx.moveTo(lines[i][0]*gridSpace*sf,0-lines[i][1]*gridSpace*sf)
@@ -68,11 +81,13 @@ function draw(){
 		}
 		ctx.stroke()
 	}
+	//ctx.setLineDash([0, 0])
 
 	//polygons
-	ctx.lineWidth=0.8*sf
-	ctx.strokeStyle='#ff00ff'
+	ctx.lineWidth=0.7*sf
+	ctx.strokeStyle='#ee00ee'
 	for(i=0;i<polygons.length;i++){
+
 		ctx.beginPath()
 		for(j=0;j<polygons[i].length;j++){
 			ctx.lineTo(polygons[i][j].X*gridSpace*sf,0-(polygons[i][j].Y*gridSpace*sf))
@@ -80,34 +95,14 @@ function draw(){
 		ctx.stroke()
 	}
 
-	//pockets
 
-	if(pockets.length>0){
-		ctx.lineWidth=0.4*sf
-		ctx.strokeStyle='#0000ff'
-		for(i=0;i<pockets.length;i++){
-			ctx.beginPath()
-			for(j=0;j<pockets[i].length;j++){
-				ctx.lineTo(pockets[i][j].X*gridSpace*sf,0-(pockets[i][j].Y*gridSpace*sf))
-			}
-			ctx.lineTo(pockets[i][0].X*gridSpace*sf,0-(pockets[i][0].Y*gridSpace*sf))
-			ctx.stroke()
-		}
-	}
+	if(polygons.length>0){
 
-	//cutout
+		ctx.fillStyle='#000'
+		ctx.beginPath()
+		ctx.arc(polygons[0][0].X*gridSpace*sf,0-polygons[0][0].Y*gridSpace*sf,sf,0,Math.PI*2)
+		ctx.fill()
 
-	if(cutout.length>0){
-		ctx.lineWidth=0.4*sf
-		ctx.strokeStyle='#000'
-		for(i=0;i<cutout.length;i++){
-			ctx.beginPath()
-			for(j=0;j<cutout[i].length;j++){
-				ctx.lineTo(cutout[i][j].X*gridSpace*sf,0-(cutout[i][j].Y*gridSpace*sf))
-			}
-			ctx.lineTo(cutout[i][0].X*gridSpace*sf,0-(cutout[i][0].Y*gridSpace*sf))
-			ctx.stroke()
-		}
 	}
 
 	//start end point
@@ -129,14 +124,46 @@ function draw(){
 		ctx.fill()
 		ctx.stroke()
 	}
-	//
 
+
+
+	//
+	//pockets
+
+	if(pockets.length>0){
+		ctx.lineWidth=0.4*sf
+		ctx.strokeStyle='#0000ff'
+		for(i=0;i<pockets.length;i++){
+			ctx.beginPath()
+			for(j=0;j<pockets[i].length;j++){
+				ctx.lineTo(pockets[i][j].X*gridSpace*sf,0-(pockets[i][j].Y*gridSpace*sf))
+			}
+			ctx.lineTo(pockets[i][0].X*gridSpace*sf,0-(pockets[i][0].Y*gridSpace*sf))
+			ctx.stroke()
+		}
+	}
+
+	//cutout
+
+	if(cutout.length>0){
+		ctx.lineWidth=0.4*sf
+		ctx.strokeStyle='#0000ff'
+		for(i=0;i<cutout.length;i++){
+			ctx.beginPath()
+			for(j=0;j<cutout[i].length;j++){
+				ctx.lineTo(cutout[i][j].X*gridSpace*sf,0-(cutout[i][j].Y*gridSpace*sf))
+			}
+			ctx.lineTo(cutout[i][0].X*gridSpace*sf,0-(cutout[i][0].Y*gridSpace*sf))
+			ctx.stroke()
+		}
+	}
+
+
+
+	//cursor
 	ctx.lineWidth = 1
 	ctx.fillStyle='#fff'
 	ctx.beginPath()
-
-
-	//ctx.translate(panX+mousePanX,panY+mousePanY)
 
 	ctx.strokeStyle='#333'
 	ctx.moveTo(mouseX,mouseY-(gridSpace/4*sf))

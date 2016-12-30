@@ -101,6 +101,7 @@ function make(){
 
 	}
 
+	
 	sbp+="SO,1,0\n"
 	sbp+="J2,0,0\n"
 
