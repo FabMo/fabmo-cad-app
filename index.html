@@ -54,13 +54,13 @@ var units = 'inch' //inch or mm
 var scale = 1000   //
 var layer = 0
 var output = 'sbp'
-var cutDepth = -0.05
+var cutDepth = 0.05
 
 var dogbone = false
 var dogbones = []
 var bones =[]
 var dbo
-var inside = true
+var inside = false
 
 var sf = 1
 
@@ -89,13 +89,16 @@ var cutout = []
 var help="\
 circle \'x1\',\'y1\',\'r\'<br>\n\
 clear \'new drawing\'<br>\n\
+cutdepth=\'z\'<br>\n\
 cutin (offset toolpath in)<br>\n\
 cutout (offset toolpath out)<br>\n\
+dogbone= \'1\' \'-1\'<br>\n\
 g,\'gcode\'<br>\n\
 grid=\'space\'<br>\n\
 line \'x1\',\'y1',\'x2\',\'y2\' <br>\n\
 line \'x2\',\'y2\'<br>\n\
 mousewheel/pinch \'zoom\'<br>\n\
+output=\'dxf\' \'gcode\' \'sbp\'<br>\n\
 pocket (pocket toolpath)<br>\n\
 rect\'x\',\'y\',\'lx\',\'ly\'<br>\n\
 sbp,\'sbp command\'<br>\n\
@@ -104,12 +107,19 @@ star\'x\',\'y\',\'r\'<br>\n\
 stock=\'x\',\'y\'<br>\n\
 tool=\'d\'<br>\n\
 touch hold (pan)<br>\n\
+units=inch<br>\n\
 "
-//units=\'inch\',\",\'cm\'<br>\n\
+
+function rmComma(s,v){
+
+	if(s.charAt(v)==','){
+		s = s.replace(/\,/,"")
+	}
+	return s
+
+}
 
 //cmd
-
-
 $("#text-area").keyup(function(e){
 
 	var cmd = document.getElementById('text-area').value
@@ -120,17 +130,73 @@ $("#text-area").keyup(function(e){
 		cmd = cmd.replace(/.*?\n\>\>/,'')
 		cmd = cmd.replace(/\n/g,'')
 		cmd = cmd.toLowerCase()
-		
-		if(cmd.substring(0,4)=="line"){
+
+		//geometry
+		if(cmd.substring(0,6)=="circle"){
+			cmd = rmComma(cmd,6)
+			pts = cmd.substring(6).split(',')
+			scalePts(pts)
+			circle(pts)	
+		}
+		else if(cmd.substring(0,4)=="line"){
+			cmd = rmComma(cmd,4)
 			pts = cmd.substring(4).split(',')
 			scalePts(pts)
 			line(pts)
 		}
-		if((cmd.substring(0,4)=="rect") && (cmd.substring(0,9)!="rectangle")){
-			//dogbone=true
+		else if((cmd.substring(0,4)=="rect") && (cmd.substring(0,9)!="rectangle")){
+			cmd = rmComma(cmd,4)
 			pts = cmd.substring(4).split(',')
 			scalePts(pts)
 			rect(pts)
+		}
+		else if(cmd.substring(0,4)=="star"){
+			console.log('star')
+			cmd = rmComma(cmd,4)
+			pts = cmd.substring(4).split(',')
+			scalePts(pts)
+			star(pts)	
+		}
+		//cuts
+		else if(cmd=="cutin"){
+			console.log('cutin')
+			cutOut(false)
+		}
+		else if(cmd=="cutout"){
+			console.log('cutout')
+			cutOut(true)
+		}
+		else if(cmd=="pocket"){
+			console.log('pocket')
+			pocket()
+		}
+		else if(cmd.substring(0,8)=="dogbone="){
+			console.log('dogbone')
+			cmd = rmComma(cmd,8)
+			if(cmd.substring(8)=='-1'){
+				inside=true
+			}
+			else if(cmd.substring(8)=='1'){
+				inside=false
+			}
+			console.log(inside)
+			dogbones=[]
+			makePath()
+			pockets=[]
+			cutout=[]
+			find90()
+			
+
+		}
+		//settings
+		else if(cmd.substring(0,9)=="cutdepth="){
+			cutDepth=parseFloat(cmd.substring(9))
+			cmd = 'cutDepth = -' + cutDepth +"\""
+		}
+		else if(cmd.substring(0,6)=="stock="){
+			cmd = rmComma(cmd,6)
+			pts = cmd.substring(6).split(',')			
+			defineStock(pts)	
 		}
 		else if(cmd.substring(0,5)=="tool="){
 			tool=parseFloat(cmd.substring(5))
@@ -145,28 +211,6 @@ $("#text-area").keyup(function(e){
 			document.getElementById('grid').innerHTML = 'grid = ' + (parseFloat(cmd.substring(5))) + "\""
 			cmd = 'grid = ' + (parseFloat(cmd.substring(5))) +"\""			
 			defineStock(stock)
-		}
-		else if(cmd=="pocket"){
-			console.log('pocket')
-			pocket()
-		}
-		else if(cmd=="dogbone"){
-			console.log('dogbone')
-			find90()
-		}
-		else if(cmd=="cutout"){
-			console.log('cutout')
-			cutOut(true)
-		}
-		else if(cmd=="cutin"){
-			console.log('cutin')
-			cutOut(false)
-		}
-		else if(cmd.substring(0,4)=="star"){
-			console.log('star')
-			pts = cmd.substring(4).split(',')
-			scalePts(pts)
-			star(pts)	
 		}
 		else if((cmd=="units") && (cmd.length==5)){
 			cmd=units
@@ -190,18 +234,6 @@ $("#text-area").keyup(function(e){
 				cmd='units=inch'
 			}
 		}
-		else if(cmd.substring(0,6)=="circle"){
-			pts = cmd.substring(6).split(',')
-			scalePts(pts)
-			circle(pts)	
-		}
-		else if(cmd.substring(0,6)=="stock="){
-			pts = cmd.substring(6).split(',')			
-			defineStock(pts)	
-		}
-		else if(cmd=="makepath"){
-			//makePath()
-		}
 		else if(cmd=="settings"){
 
 			var settings="\
@@ -221,7 +253,6 @@ $("#text-area").keyup(function(e){
 				settings = settings.replace(/<br>/g,'')
 				alert(settings)
 			}
-
 
 			cmd='console.log(settings)'
 			
@@ -266,12 +297,14 @@ $("#text-area").keyup(function(e){
 
 
 function undo(){
-	lines.pop()
 	cutout=[]
 	pockets=[]
-	bones = []
-	dogbones=[]
-	if(lines.length>0){
+	if(dogbones.length>0){
+		dogbones=[]
+		bones = []
+	}
+	else if(lines.length>2){
+		lines.pop()
 		point = [lines[lines.length-1][2],lines[lines.length-1][3]]
 	}
 	else{
@@ -314,33 +347,6 @@ function rect(pts){
 		lines[lines.length-1].push(pts[0],pts[1],(pts[0]+pts[2]),pts[1],(pts[0]+pts[2]),(pts[1]+pts[2]),(pts[0]),(pts[1]+pts[2]),pts[0],pts[1])
 		point = [lines[lines.length-1][0],lines[lines.length-1][1]]
 	}
-
-	if(dogbone==true){
-
-		//var dbo = 0
-
-		dbo = (Math.sqrt(Math.pow((tool/2),2)/2)*grid)
-
-		
-		db=lines[lines.length-1]
-		for(d=0;d<8;d+=2){
-			if(d==0){
-				c=[db[d]+dbo,db[d+1]+dbo,((tool)/2)*grid]
-			}
-			else if(d==2){
-				c=[db[d]-dbo,db[d+1]+dbo,((tool)/2)*grid]
-			}
-			else if(d==4){
-				c=[db[d]-dbo,db[d+1]-dbo,((tool)/2)*grid]
-			}
-			else{
-				c=[db[d]+dbo,db[d+1]-dbo,((tool)/2)*grid]
-			}
-			//console.log(f)
-			//makeDogbones(c)
-		}
-	}
-	dogbone=false
 	
 }
 
@@ -447,7 +453,9 @@ function defineStock(pts){
 }
 
 function makePath(){
+
 	paths=[]
+	polygons = []
 
 	for(i=0;i<lines.length;i++){
 		paths.push([])
@@ -466,8 +474,18 @@ function makePath(){
 		}
 	
 	}
-
-	polygons = []
+	else if(inside==false){
+	
+		var subtract = []
+	
+		for(i=0;i<dogbones.length;i++){
+			subtract.push([])
+			for(j=0;j<dogbones[i].length;j+=2){
+				subtract[subtract.length-1].push({X:dogbones[i][j]*scale,Y:dogbones[i][j+1]*scale})
+			}			
+		}
+	console.log(subtract)
+	}
 
 	while(paths.length>0){
 
@@ -526,10 +544,22 @@ function makePath(){
 	cpr.AddPaths(polygons, ClipperLib.PolyType.ptSubject, true)
 
 	var solution_paths = new ClipperLib.Paths()
-	cpr.Execute(ClipperLib.ClipType.ctUnion, solution_paths, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero);
+	cpr.Execute(ClipperLib.ClipType.ctUnion, solution_paths, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero)
 	polygons=solution_paths
 
-	polygons = ClipperLib.JS.Clean(polygons, 0.03*scale)
+	if(inside==false){
+
+		cpr = new ClipperLib.Clipper()
+		cpr.AddPaths(polygons, ClipperLib.PolyType.ptSubject, true)
+		cpr.AddPaths(subtract, ClipperLib.PolyType.ptClip, true)
+		cpr.Execute(ClipperLib.ClipType.ctDifference, solution_paths, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero)
+		polygons=solution_paths
+
+	}
+
+	
+
+	polygons = ClipperLib.JS.Clean(polygons, 0.015*scale)
 
 	for(i=0;i<polygons.length;i++){
 		for(j=0;j<polygons[i].length;j++){
@@ -588,13 +618,10 @@ function find90(){
 		}
 
 	}
-	//for(i=0;i<db.length;i++){
-	//	bones.push(db[i])
-	//}
-	bones=db
-	//console.log(bones)
 
-	dogbonePts(true)
+	bones=db
+
+	dogbonePts(inside)
 
 }
 
@@ -636,34 +663,11 @@ function dogbonePts(dbin){
 					db.pop()
 				}
 
-				/*
-
-				if(db[db.length-1].length==3){
-					//find diagonal
-				
-					if( ( Math.abs(db[db.length-1][1].X-db[db.length-1][2].X) == (tool*2) ) && ( Math.abs(db[db.length-1][1].Y-db[db.length-1][2].Y) == (tool*2) ) ){
-						db[db.length-1]=[db[db.length-1][0]]
-					}
-
-					else if( ( Math.abs(db[db.length-1][0].X-db[db.length-1][2].X) == (tool*2) ) && ( Math.abs(db[db.length-1][0].Y-db[db.length-1][2].Y) == (tool*2) ) ){
-						db[db.length-1]=[db[db.length-1][1]]
-					}
-					else{
-						db[db.length-1]=[db[db.length-1][2]]
-					}
-
-				}
-				else{
-					db.pop()
-				}
-				*/
-
 			}
 
 		}		
 	
 	}
-	//console.log(db)
 
 	bones=[]
 	for(i=0;i<db.length;i++){
@@ -671,8 +675,6 @@ function dogbonePts(dbin){
 		bones.push(db[i][0])
 		}
 	}
-	//bones = db
-	//console.log(bones)
 	
 	if(bones.length>0){
 		makeDogbones(bones)
@@ -681,6 +683,8 @@ function dogbonePts(dbin){
 
 
 function pocket(){
+
+inside=true
 
 cutout=[]
 
@@ -717,7 +721,7 @@ pockets.reverse()
 
 ClipperLib.JS.ScaleDownPaths(pockets, scale)
 
-//sort in to out
+//sort
 
 draw()
 
@@ -741,7 +745,6 @@ var co = new ClipperLib.ClipperOffset(0.25, 0.25)
 co.AddPaths(cutout, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon)
 cutout = new ClipperLib.Paths()
 if(out==true){
-	//dogbones=[]
 	co.Execute(cutout,(tool/2*grid) * scale)
 }
 else if(out==false){

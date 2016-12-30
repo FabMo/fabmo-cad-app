@@ -68,7 +68,7 @@ function make(){
 		//on
 		for(i=0;i<polygons.length;i++){
 			sbp+="J2,"+(polygons[i][0].X/grid).toFixed(3) + "," + (polygons[i][0].Y/grid).toFixed(3) +"\n"
-			sbp+="MZ,-0.05\n"
+			sbp+="MZ,-"+cutDepth+"\n"
 			for(j=1;j<polygons[i].length;j++){
 				sbp+="M2,"+(polygons[i][j].X/grid).toFixed(3) + "," + (polygons[i][j].Y/grid).toFixed(3) + "\n"
 			}
@@ -79,7 +79,7 @@ function make(){
 		//pocket
 		for(i=0;i<pockets.length;i++){
 			sbp+="J2,"+(pockets[i][0].X/grid).toFixed(3) + "," + (pockets[i][0].Y/grid).toFixed(3) +"\n"
-			sbp+="MZ,-0.05\n"
+			sbp+="MZ,-"+cutDepth+"\n"
 			for(j=1;j<pockets[i].length;j++){
 				sbp+="M2,"+(pockets[i][j].X/grid).toFixed(3) + "," + (pockets[i][j].Y/grid).toFixed(3) + "\n"
 			}
@@ -91,7 +91,7 @@ function make(){
 		//cutout
 		for(i=0;i<cutout.length;i++){
 			sbp+="J2,"+(cutout[i][0].X/grid).toFixed(3) + "," + (cutout[i][0].Y/grid).toFixed(3) +"\n"
-			sbp+="MZ,-0.05\n"
+			sbp+="MZ,-"+cutDepth+"\n"
 			for(j=1;j<cutout[i].length;j++){
 				sbp+="M2,"+(cutout[i][j].X/grid).toFixed(3) + "," + (cutout[i][j].Y/grid).toFixed(3) + "\n"
 			}
@@ -111,8 +111,6 @@ function make(){
 	   name : 'cad',
 		description :  ''
 	})
-
-
 
 
 }
