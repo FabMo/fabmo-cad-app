@@ -28,6 +28,7 @@
 <input type="submit" id="make" value="make" onclick="make()"/>
 <input type="submit" id="clear" value="clear" onclick="clearAll()"/>
 <input type="submit" id="undo" value="undo" onclick="undo()"/>
+<a href="#" id="download">download</a>
 </body>
 
 <script>
@@ -53,14 +54,14 @@ var tool = 0.125
 var units = 'inch' //inch or mm
 var scale = 1000   //
 var layer = 0
-var output = 'sbp'
+var output = 'gcode'  //sbp gcode dxf
 var cutDepth = 0.05
 
 var dogbone = false
 var dogbones = []
 var bones =[]
 var dbo
-var inside = false
+var inside = true
 
 var sf = 1
 
@@ -92,11 +93,15 @@ clear \'new drawing\'<br>\n\
 cutdepth=\'z\'<br>\n\
 cutin (offset toolpath in)<br>\n\
 cutout (offset toolpath out)<br>\n\
+dogbone (make dogbone fillets)<br>\n\
 dogbone= \'1\' \'-1\'<br>\n\
 g,\'gcode\'<br>\n\
 grid=\'space\'<br>\n\
 line \'x1\',\'y1',\'x2\',\'y2\' <br>\n\
 line \'x2\',\'y2\'<br>\n\
+makedxf (download dxf)<br>\n\
+makeg (download gcode)<br>\n\
+makesbp (download sbp)<br>\n\
 mousewheel/pinch \'zoom\'<br>\n\
 output=\'dxf\' \'gcode\' \'sbp\'<br>\n\
 pocket (pocket toolpath)<br>\n\
@@ -166,9 +171,16 @@ $("#text-area").keyup(function(e){
 			console.log('cutout')
 			cutOut(true)
 		}
-		else if(cmd=="pocket"){
-			console.log('pocket')
-			pocket()
+		else if(cmd.substring(0,2)=="g,"){
+			cmd=cmd.substring(2,cmd.length)
+			fabmo.runGCode(cmd)
+		}
+		else if(cmd=="dogbone"){
+			dogbones=[]
+			makePath()
+			pockets=[]
+			cutout=[]
+			find90()
 		}
 		else if(cmd.substring(0,8)=="dogbone="){
 			console.log('dogbone')
@@ -179,19 +191,49 @@ $("#text-area").keyup(function(e){
 			else if(cmd.substring(8)=='1'){
 				inside=false
 			}
-			console.log(inside)
 			dogbones=[]
 			makePath()
 			pockets=[]
 			cutout=[]
 			find90()
-			
-
+		}
+		else if(cmd=="pocket"){
+			console.log('pocket')
+			pocket()
+		}
+		else if(cmd.substring(0,4)=="sbp,"){
+			cmd=cmd.substring(4,cmd.length)
+			fabmo.runSBP(cmd)
 		}
 		//settings
 		else if(cmd.substring(0,9)=="cutdepth="){
 			cutDepth=parseFloat(cmd.substring(9))
 			cmd = 'cutDepth = -' + cutDepth +"\""
+		}
+		else if(cmd.substring(0,5)=="grid="){
+			stock[0]=stock[0]/grid
+			stock[1]=stock[1]/grid
+			grid=1/(parseFloat(cmd.substring(5)))
+			//todo set zoom
+			document.getElementById('grid').innerHTML = 'grid = ' + (parseFloat(cmd.substring(5))) + "\""
+			cmd = 'grid = ' + (parseFloat(cmd.substring(5))) +"\""			
+			defineStock(stock)
+		}
+		else if(cmd.substring(0,7)=="output="){
+			output=(cmd.substring(7))
+			if(output=='sbp'){
+				cmd = 'output=sbp (shopbot program)'
+			}
+			else if(output=='gcode'){
+				cmd = 'output=gcode'
+			}
+			else if(output=='dxf'){
+				cmd = 'output=dxf'
+			}
+			else{
+				output = 'sbp'
+				cmd = output
+			}
 		}
 		else if(cmd.substring(0,6)=="stock="){
 			cmd = rmComma(cmd,6)
@@ -202,26 +244,8 @@ $("#text-area").keyup(function(e){
 			tool=parseFloat(cmd.substring(5))
 			cmd = 'tool diameter = ' + tool +"\""
 		}
-		else if(cmd.substring(0,5)=="grid="){
-			stock[0]=stock[0]/grid
-			stock[1]=stock[1]/grid
-			grid=1/(parseFloat(cmd.substring(5)))
-			//set zoom
-
-			document.getElementById('grid').innerHTML = 'grid = ' + (parseFloat(cmd.substring(5))) + "\""
-			cmd = 'grid = ' + (parseFloat(cmd.substring(5))) +"\""			
-			defineStock(stock)
-		}
 		else if((cmd=="units") && (cmd.length==5)){
 			cmd=units
-		}
-		else if(cmd.substring(0,2)=="g,"){
-			cmd=cmd.substring(2,cmd.length)
-			fabmo.runGCode(cmd)
-		}
-		else if(cmd.substring(0,4)=="sbp,"){
-			cmd=cmd.substring(4,cmd.length)
-			fabmo.runSBP(cmd)
 		}
 		else if(cmd.substring(0,6)=="units="){
 			cmd=cmd.substring(6,cmd.length)
@@ -232,6 +256,18 @@ $("#text-area").keyup(function(e){
 			else if((cmd =='inch')||(cmd=="\"")){
 				units = 'inch'
 				cmd='units=inch'
+			}
+		}
+		else if((cmd=="?") || (cmd=="help")){
+			d = new Date()
+			console.log(help)
+			cmd = "console.log(help)"
+			if(fabmo.isPresent()==true){
+				fabmo.notify('info',help + '<font style=\'display:none\'>' + d.toLocaleString() + '</font>')
+			}
+			else{
+				help = help.replace(/<br>/g,'')
+				alert(help)
 			}
 		}
 		else if(cmd=="settings"){
@@ -260,6 +296,18 @@ $("#text-area").keyup(function(e){
 		else if(cmd=="clear"){
 			clearAll()
 		}
+		else if(cmd=="makedxf"){
+			output='dxf'
+			make()
+		}
+		else if(cmd=="makeg"){
+			output='gcode'
+			make()
+		}
+		else if(cmd=="makesbp"){
+			output='sbp'
+			make()
+		}
 		else if(cmd == "undo"){
 			undo()
 		}
@@ -268,18 +316,6 @@ $("#text-area").keyup(function(e){
 			panX=0
 			panY=0
 			
-		}
-		else if((cmd=="?") || (cmd=="help")){
-			d = new Date()
-			console.log(help)
-			cmd = "console.log(help)"
-			if(fabmo.isPresent()==true){
-				fabmo.notify('info',help + '<font style=\'display:none\'>' + d.toLocaleString() + '</font>')
-			}
-			else{
-				help = help.replace(/<br>/g,'')
-				alert(help)
-			}
 		}
 		else{
 			cmd = "FabMo CAD \(enter \'?\' for help\)"
