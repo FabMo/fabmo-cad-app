@@ -56,6 +56,7 @@ var cutDepth = 0.05
 var feedrate = 0.5
 var plungerate = 0.2
 var passDepth = -1
+var name = 'cad'
 
 var dogbone = false
 var dogbones = []
@@ -105,6 +106,7 @@ make (download cut file)<br>\n\
 makeg (download gcode)<br>\n\
 makesbp (download sbp)<br>\n\
 mousewheel/pinch \'zoom\'<br>\n\
+name= \'filename\'<br>\n\
 output=\'dxf\' \'gcode\' \'sbp\'<br>\n\
 pocket (pocket toolpath)<br>\n\
 plungerate=\'inch/sec\'<br>\n\
@@ -219,6 +221,10 @@ $("#text-area").keyup(function(e){
 		}
 		else if(cmd=="make"){
 			make()
+		}
+		else if(cmd.substring(0,5)=="name="){
+			name=cmd.substring(5)
+			cmd = "filename = " + name
 		}
 		else if(cmd.substring(0,7)=="output="){
 			output=(cmd.substring(7))

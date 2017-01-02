@@ -47,15 +47,13 @@ function draw(){
 
 	//stock
 	if(stock.length>0){
-		ctx.fillStyle='rgba(0,200,0,0.1)'
+		ctx.fillStyle='rgba(0,0,200,0.1)'
 		ctx.beginPath()
 		ctx.rect(0,0,(stock[0])*gridSpace*sf,(0-stock[1])*gridSpace*sf)
 		ctx.fill()
 	}
 
-
 	//dogbones
-
 	ctx.strokeStyle='#000'
 	for(i=0;i<dogbones.length;i++){
 		ctx.beginPath()
@@ -64,8 +62,6 @@ function draw(){
 		}
 		ctx.stroke()	
 	}
-
-
 
 	//lines
 	//ctx.setLineDash([2*sf, 3*sf])
@@ -124,8 +120,6 @@ function draw(){
 		ctx.fill()
 		ctx.stroke()
 	}
-
-
 
 	//
 	//pockets

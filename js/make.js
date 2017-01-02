@@ -142,8 +142,8 @@ function make(){
 
 		fabmo.submitJob({
 		   file : sbp,
-		   filename : 'cad.SBP',
-		   name : 'cad',
+		   filename : name + '.SBP',
+		   name : name,
 			description :  ''
 		})
 
@@ -234,8 +234,8 @@ function make(){
 
 		fabmo.submitJob({
 		   file : g,
-		   filename : 'cad.g',
-		   name : 'cad',
+		   filename : name + '.g',
+		   name : name,
 			description :  ''
 		})
 
@@ -262,7 +262,7 @@ function make(){
 
 	var link = document.getElementById("download")
 	link.setAttribute("href", "data:text/plain;base64," + btoa(dxf))
-	link.setAttribute("download","cad.dxf")
+	link.setAttribute("download", name + ".dxf")
 	link.click()
 
 	}
