@@ -15,7 +15,7 @@
 	<script src="js/make.js"></script>
 </head>
 
-<body onload=" draw(); defineStock([3,3]);">
+<body onload=" draw(); defineStock([4,4]);">
 
 <canvas id="cad-canvas"></canvas>
 
@@ -35,10 +35,7 @@
 
 
 //TODO
-//
-//rectangle and polygon commands
-//
-//
+
 
 $(window).resize(function(){
 	draw()
@@ -51,11 +48,14 @@ var gridIncrement = 10
 var grid = 4 //1/4"
 var stock = []
 var tool = 0.125
-var units = 'inch' //inch or mm
+var units = 'sbp' //inch or mm
 var scale = 1000   //
 var layer = 0
 var output = 'gcode'  //sbp gcode dxf
 var cutDepth = 0.05
+var feedrate = 0.5
+var plungerate = 0.2
+var passDepth = -1
 
 var dogbone = false
 var dogbones = []
@@ -95,16 +95,19 @@ cutin (offset toolpath in)<br>\n\
 cutout (offset toolpath out)<br>\n\
 dogbone (make dog-bone fillets)<br>\n\
 dogbone= \'1\' \'-1\'<br>\n\
+feedrate=\'inch/sec\'<br>\n\
 g,\'gcode\'<br>\n\
 grid=\'space\'<br>\n\
 line \'x1\',\'y1',\'x2\',\'y2\' <br>\n\
 line \'x2\',\'y2\'<br>\n\
 makedxf (download dxf)<br>\n\
+make (download cut file)<br>\n\
 makeg (download gcode)<br>\n\
 makesbp (download sbp)<br>\n\
 mousewheel/pinch \'zoom\'<br>\n\
 output=\'dxf\' \'gcode\' \'sbp\'<br>\n\
 pocket (pocket toolpath)<br>\n\
+plungerate=\'inch/sec\'<br>\n\
 rect\'x\',\'y\',\'lx\',\'ly\'<br>\n\
 sbp,\'sbp command\'<br>\n\
 settings<br>\n\
@@ -114,15 +117,6 @@ tool=\'d\'<br>\n\
 touch hold (pan)<br>\n\
 units=inch<br>\n\
 "
-
-function rmComma(s,v){
-
-	if(s.charAt(v)==','){
-		s = s.replace(/\,/,"")
-	}
-	return s
-
-}
 
 //cmd
 $("#text-area").keyup(function(e){
@@ -210,6 +204,10 @@ $("#text-area").keyup(function(e){
 			cutDepth=parseFloat(cmd.substring(9))
 			cmd = 'cutDepth = -' + cutDepth +"\""
 		}
+		else if(cmd.substring(0,9)=="feedrate="){
+			feedrate=parseFloat(cmd.substring(9))
+			cmd = 'feedrate = ' + feedrate +" in/sec"
+		}
 		else if(cmd.substring(0,5)=="grid="){
 			stock[0]=stock[0]/grid
 			stock[1]=stock[1]/grid
@@ -218,6 +216,9 @@ $("#text-area").keyup(function(e){
 			document.getElementById('grid').innerHTML = 'grid = ' + (parseFloat(cmd.substring(5))) + "\""
 			cmd = 'grid = ' + (parseFloat(cmd.substring(5))) +"\""			
 			defineStock(stock)
+		}
+		else if(cmd=="make"){
+			make()
 		}
 		else if(cmd.substring(0,7)=="output="){
 			output=(cmd.substring(7))
@@ -234,6 +235,10 @@ $("#text-area").keyup(function(e){
 				output = 'sbp'
 				cmd = output
 			}
+		}
+		else if(cmd.substring(0,11)=="plungerate="){
+			plungerate=parseFloat(cmd.substring(11))
+			cmd = 'plungerate = ' + plungerate +" in/sec"
 		}
 		else if(cmd.substring(0,6)=="stock="){
 			cmd = rmComma(cmd,6)
@@ -332,6 +337,15 @@ $("#text-area").keyup(function(e){
 })
 
 
+function rmComma(s,v){
+
+	if(s.charAt(v)==','){
+		s = s.replace(/\,/,"")
+	}
+	return s
+
+}
+
 function undo(){
 	cutout=[]
 	pockets=[]
@@ -351,7 +365,7 @@ function undo(){
 
 function clearAll(){
 	bones=[]
-	stock=[3,3]
+	stock=[4,4]
 	lines=[]
 	pockets=[]
 	polygons=[]
@@ -578,6 +592,9 @@ function makePath(){
 
 	var cpr = new ClipperLib.Clipper()
 	cpr.AddPaths(polygons, ClipperLib.PolyType.ptSubject, true)
+
+
+	//Number ClipType {ctIntersection: 0, ctUnion: 1, ctDifference: 2, ctXor: 3}
 
 	var solution_paths = new ClipperLib.Paths()
 	cpr.Execute(ClipperLib.ClipType.ctUnion, solution_paths, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero)

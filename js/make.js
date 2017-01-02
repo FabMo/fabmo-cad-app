@@ -5,7 +5,6 @@ var ymax = 0
 
 function make(){
 
-
 	//min/max
 	/*
 
@@ -54,12 +53,19 @@ function make(){
 	//console.log(unit)
 	//console.log(lines)
 
+	if((output=='sbp')||(output=='gcode')){
+		var pt= Math.ceil(cutDepth/tool)  //passes
+		var pd = parseFloat(cutDepth/pt) //depth of pass
+		alert(pt)
+	}
+
+
 	if(output=='sbp'){
 
 		var sbp = ""
 
-		sbp+="MS," + 0.5 + "," + 0.25 + "\n"
-		sbp+="JZ,0.2\n"
+		sbp+="MS," + feedrate + "," + plungerate + "\n"
+		sbp+="JZ,0.1\n"
 		sbp+="SO,1,1\n"
 		sbp+="PAUSE 3\n"
 
@@ -67,37 +73,67 @@ function make(){
 			//on
 			for(i=0;i<polygons.length;i++){
 				sbp+="J2,"+(polygons[i][0].X/grid).toFixed(3) + "," + (polygons[i][0].Y/grid).toFixed(3) +"\n"
-				sbp+="MZ,-"+cutDepth+"\n"
-				for(j=1;j<polygons[i].length;j++){
-					sbp+="M2,"+(polygons[i][j].X/grid).toFixed(3) + "," + (polygons[i][j].Y/grid).toFixed(3) + "\n"
+
+				for(p=1;p<=pt;p++){
+					if(p==pt){
+						sbp+="MZ,-"+cutDepth+"\n"
+					}
+					else{
+						sbp+="MZ,-" + (p*pd).toFixed(3) + "\n"
+					}	
+
+					for(j=1;j<polygons[i].length;j++){
+						sbp+="M2,"+(polygons[i][j].X/grid).toFixed(3) + "," + (polygons[i][j].Y/grid).toFixed(3) + "\n"
+					}
 				}
-				sbp+="JZ,0.2\n"
+
+				sbp+="JZ,0.1\n"
 			}
 		}
 		else if(pockets.length!=0){
 			//pocket
-			for(i=0;i<pockets.length;i++){
-				sbp+="J2,"+(pockets[i][0].X/grid).toFixed(3) + "," + (pockets[i][0].Y/grid).toFixed(3) +"\n"
-				sbp+="MZ,-"+cutDepth+"\n"
-				for(j=1;j<pockets[i].length;j++){
-					sbp+="M2,"+(pockets[i][j].X/grid).toFixed(3) + "," + (pockets[i][j].Y/grid).toFixed(3) + "\n"
+
+			for(p=1;p<=pt;p++){
+
+
+				for(i=0;i<pockets.length;i++){
+					sbp+="J2,"+(pockets[i][0].X/grid).toFixed(3) + "," + (pockets[i][0].Y/grid).toFixed(3) +"\n"
+					if(p==pt){
+						sbp+="MZ,-"+cutDepth+"\n"
+					}
+					else{
+						sbp+="MZ,-" + (p*pd).toFixed(3) + "\n"
+					}	
+					for(j=1;j<pockets[i].length;j++){
+						sbp+="M2,"+(pockets[i][j].X/grid).toFixed(3) + "," + (pockets[i][j].Y/grid).toFixed(3) + "\n"
+					}
+					sbp+="M2,"+(pockets[i][0].X/grid).toFixed(3) + "," + (pockets[i][0].Y/grid).toFixed(3) + "\n"
+					sbp+="JZ,0.1\n"
 				}
-				sbp+="M2,"+(pockets[i][0].X/grid).toFixed(3) + "," + (pockets[i][0].Y/grid).toFixed(3) + "\n"
-				sbp+="JZ,0.2\n"
+
 			}
 		}
 		else if(cutout.length!=0){
 			//cutout
 			for(i=0;i<cutout.length;i++){
 				sbp+="J2,"+(cutout[i][0].X/grid).toFixed(3) + "," + (cutout[i][0].Y/grid).toFixed(3) +"\n"
-				sbp+="MZ,-"+cutDepth+"\n"
-				for(j=1;j<cutout[i].length;j++){
-					sbp+="M2,"+(cutout[i][j].X/grid).toFixed(3) + "," + (cutout[i][j].Y/grid).toFixed(3) + "\n"
-				}
-				sbp+="M2,"+(cutout[i][0].X/grid).toFixed(3) + "," + (cutout[i][0].Y/grid).toFixed(3) + "\n"
-				sbp+="JZ,0.2\n"
-			}
 
+				for(p=1;p<=pt;p++){
+					if(p==pt){
+						sbp+="MZ,-"+cutDepth+"\n"
+					}
+					else{
+						sbp+="MZ,-" + (p*pd).toFixed(3) + "\n"
+					}
+	
+					for(j=1;j<cutout[i].length;j++){
+						sbp+="M2,"+(cutout[i][j].X/grid).toFixed(3) + "," + (cutout[i][j].Y/grid).toFixed(3) + "\n"
+					}
+					sbp+="M2,"+(cutout[i][0].X/grid).toFixed(3) + "," + (cutout[i][0].Y/grid).toFixed(3) + "\n"
+
+					sbp+="JZ,0.1\n"
+				}	
+			}
 		}
 
 	
@@ -116,44 +152,77 @@ function make(){
 
 		var g = ""
 
+		var feed = (feedrate*60).toFixed(1)
+		var plunge = (plungerate*60).toFixed(1)
+
 		g+="m20\n"
-		g+="g1f30\n"
+		g+="g1f" + feed + "\n" 
 		g+="g0z0.2\n"
 		g+="m3\n"
 		g+="g4p3\n"
 
 		if((pockets.length==0)&&(cutout.length==0)){
-			//on
+
 			for(i=0;i<polygons.length;i++){
 				g+="g0x"+(polygons[i][0].X/grid).toFixed(3) + "y" + (polygons[i][0].Y/grid).toFixed(3) +"\n"
-				g+="g1z-"+cutDepth+"\n"
-				for(j=1;j<polygons[i].length;j++){
-					g+="g1x"+(polygons[i][j].X/grid).toFixed(3) + "y" + (polygons[i][j].Y/grid).toFixed(3) + "\n"
-				}
+
+				for(p=1;p<=pt;p++){
+					if(p==pt){
+						g+="g1z-" + cutDepth + "f" + plunge +"\n"
+					}
+					else{
+						g+="g1z-" + (p*pd).toFixed(3) + "f" + plunge +"\n"
+					}
+
+					for(j=1;j<polygons[i].length;j++){
+						g+="g1x"+(polygons[i][j].X/grid).toFixed(3) + "y" + (polygons[i][j].Y/grid).toFixed(3) + "f" + feed + "\n"
+					}
+
+				}				
+	
 				g+="g0z0.2\n"
 			}
 		}
 		else if(pockets.length!=0){
-			//pocket
-			for(i=0;i<pockets.length;i++){
-				g+="g0x"+(pockets[i][0].X/grid).toFixed(3) + "y" + (pockets[i][0].Y/grid).toFixed(3) +"\n"
-				g+="g1z-"+cutDepth+"\n"
-				for(j=1;j<pockets[i].length;j++){
-					g+="g1x"+(pockets[i][j].X/grid).toFixed(3) + "y" + (pockets[i][j].Y/grid).toFixed(3) + "\n"
+
+			for(p=1;p<=pt;p++){
+
+				for(i=0;i<pockets.length;i++){
+					g+="g0x"+(pockets[i][0].X/grid).toFixed(3) + "y" + (pockets[i][0].Y/grid).toFixed(3) +"\n"
+					if(p==pt){
+						g+="g1z-" + cutDepth + "f" + plunge +"\n"
+					}
+					else{
+						g+="g1z-" + (p*pd).toFixed(3) + "f" + plunge +"\n"
+					}
+					for(j=1;j<pockets[i].length;j++){
+						g+="g1x"+(pockets[i][j].X/grid).toFixed(3) + "y" + (pockets[i][j].Y/grid).toFixed(3)+ "f" + feed + "\n"
+					}
+					g+="g1x"+(pockets[i][0].X/grid).toFixed(3) + "y" + (pockets[i][0].Y/grid).toFixed(3)+ "f" + feed + "\n"
+					g+="g0z0.2\n"
 				}
-				g+="g1x"+(pockets[i][0].X/grid).toFixed(3) + "y" + (pockets[i][0].Y/grid).toFixed(3) + "\n"
-				g+="g0z0.2\n"
+
 			}
 		}
 		else if(cutout.length!=0){
 			//cutout
 			for(i=0;i<cutout.length;i++){
 				g+="g0x"+(cutout[i][0].X/grid).toFixed(3) + "y" + (cutout[i][0].Y/grid).toFixed(3) +"\n"
-				g+="g1z-"+cutDepth+"\n"
-				for(j=1;j<cutout[i].length;j++){
-					g+="g1x"+(cutout[i][j].X/grid).toFixed(3) + "y" + (cutout[i][j].Y/grid).toFixed(3) + "\n"
+
+				for(p=1;p<=pt;p++){
+					if(p==pt){
+						g+="g1z-" + cutDepth + "f" + plunge +"\n"
+					}
+					else{
+						g+="g1z-" + (p*pd).toFixed(3) + "f" + plunge +"\n"
+					}
+			
+					for(j=1;j<cutout[i].length;j++){
+						g+="g1x"+(cutout[i][j].X/grid).toFixed(3) + "y" + (cutout[i][j].Y/grid).toFixed(3)+ "f" + feed + "\n"
+					}
+					g+="g1x"+(cutout[i][0].X/grid).toFixed(3) + "y" + (cutout[i][0].Y/grid).toFixed(3)+ "f" + feed + "\n"
 				}
-				g+="g1x"+(cutout[i][0].X/grid).toFixed(3) + "y" + (cutout[i][0].Y/grid).toFixed(3) + "\n"
+
 				g+="g0z0.2\n"
 			}
 
@@ -186,7 +255,7 @@ function make(){
 			}
 			dxf+="SEQEND\n0\n"
 		}
-	}
+	
 
 	dxf+="ENDSEC\n0\nEOF"
 	//console.log(dxf)
@@ -195,5 +264,7 @@ function make(){
 	link.setAttribute("href", "data:text/plain;base64," + btoa(dxf))
 	link.setAttribute("download","cad.dxf")
 	link.click()
+
+	}
 
 }
