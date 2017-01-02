@@ -54,9 +54,14 @@ function make(){
 	//console.log(lines)
 
 	if((output=='sbp')||(output=='gcode')){
-		var pt= Math.ceil(cutDepth/tool)  //passes
-		var pd = parseFloat(cutDepth/pt) //depth of pass
-		alert(pt)
+		if(passDepth==-1){
+			var pt= Math.ceil(cutDepth/tool)  //passes
+			var pd = parseFloat(cutDepth/pt) //depth of pass
+		}
+		else{
+			var pt= Math.ceil(cutDepth/passDepth)  //passes
+			var pd = parseFloat(cutDepth/pt) //depth of pass
+		}
 	}
 
 
@@ -157,7 +162,7 @@ function make(){
 
 		g+="m20\n"
 		g+="g1f" + feed + "\n" 
-		g+="g0z0.2\n"
+		g+="g0z0.1\n"
 		g+="m3\n"
 		g+="g4p3\n"
 
@@ -180,7 +185,7 @@ function make(){
 
 				}				
 	
-				g+="g0z0.2\n"
+				g+="g0z0.1\n"
 			}
 		}
 		else if(pockets.length!=0){
@@ -199,7 +204,7 @@ function make(){
 						g+="g1x"+(pockets[i][j].X/grid).toFixed(3) + "y" + (pockets[i][j].Y/grid).toFixed(3)+ "f" + feed + "\n"
 					}
 					g+="g1x"+(pockets[i][0].X/grid).toFixed(3) + "y" + (pockets[i][0].Y/grid).toFixed(3)+ "f" + feed + "\n"
-					g+="g0z0.2\n"
+					g+="g0z0.1\n"
 				}
 
 			}
@@ -223,7 +228,7 @@ function make(){
 					g+="g1x"+(cutout[i][0].X/grid).toFixed(3) + "y" + (cutout[i][0].Y/grid).toFixed(3)+ "f" + feed + "\n"
 				}
 
-				g+="g0z0.2\n"
+				g+="g0z0.1\n"
 			}
 
 		}

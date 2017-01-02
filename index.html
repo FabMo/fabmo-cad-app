@@ -107,6 +107,7 @@ makeg (download gcode)<br>\n\
 makesbp (download sbp)<br>\n\
 mousewheel/pinch \'zoom\'<br>\n\
 name= \'filename\'<br>\n\
+passdepth=\'z\' or \'-1\' for tool diameter<br>\n\
 output=\'dxf\' \'gcode\' \'sbp\'<br>\n\
 pocket (pocket toolpath)<br>\n\
 plungerate=\'inch/sec\'<br>\n\
@@ -204,7 +205,7 @@ $("#text-area").keyup(function(e){
 		//settings
 		else if(cmd.substring(0,9)=="cutdepth="){
 			cutDepth=parseFloat(cmd.substring(9))
-			cmd = 'cutDepth = -' + cutDepth +"\""
+			cmd = 'cutdepth = -' + cutDepth +"\""
 		}
 		else if(cmd.substring(0,9)=="feedrate="){
 			feedrate=parseFloat(cmd.substring(9))
@@ -241,6 +242,10 @@ $("#text-area").keyup(function(e){
 				output = 'sbp'
 				cmd = output
 			}
+		}
+		else if(cmd.substring(0,10)=="passdepth="){
+			passDepth=parseFloat(cmd.substring(10))
+			cmd = 'passdepth = -' + passDepth +"\""
 		}
 		else if(cmd.substring(0,11)=="plungerate="){
 			plungerate=parseFloat(cmd.substring(11))
