@@ -180,7 +180,12 @@ function make(){
 					}
 
 					for(j=1;j<polygons[i].length;j++){
-						g+="g1x"+(polygons[i][j].X/grid).toFixed(3) + "y" + (polygons[i][j].Y/grid).toFixed(3) + "f" + feed + "\n"
+						if(j==1){
+							g+="g1x"+(polygons[i][j].X/grid).toFixed(3) + "y" + (polygons[i][j].Y/grid).toFixed(3) + "f" + feed + "\n"
+						}
+						else{
+							g+="g1x"+(polygons[i][j].X/grid).toFixed(3) + "y" + (polygons[i][j].Y/grid).toFixed(3)+"\n"
+						}
 					}
 
 				}				
@@ -201,9 +206,14 @@ function make(){
 						g+="g1z-" + (p*pd).toFixed(3) + "f" + plunge +"\n"
 					}
 					for(j=1;j<pockets[i].length;j++){
-						g+="g1x"+(pockets[i][j].X/grid).toFixed(3) + "y" + (pockets[i][j].Y/grid).toFixed(3)+ "f" + feed + "\n"
+						if(j==1){
+							g+="g1x"+(pockets[i][j].X/grid).toFixed(3) + "y" + (pockets[i][j].Y/grid).toFixed(3)+ "f" + feed + "\n"
+						}
+						else{
+							g+="g1x"+(pockets[i][j].X/grid).toFixed(3) + "y" + (pockets[i][j].Y/grid).toFixed(3) + "\n"
+						}
 					}
-					g+="g1x"+(pockets[i][0].X/grid).toFixed(3) + "y" + (pockets[i][0].Y/grid).toFixed(3)+ "f" + feed + "\n"
+					g+="g1x"+(pockets[i][0].X/grid).toFixed(3) + "y" + (pockets[i][0].Y/grid).toFixed(3)+ "\n"
 					g+="g0z0.1\n"
 				}
 
@@ -223,9 +233,14 @@ function make(){
 					}
 			
 					for(j=1;j<cutout[i].length;j++){
-						g+="g1x"+(cutout[i][j].X/grid).toFixed(3) + "y" + (cutout[i][j].Y/grid).toFixed(3)+ "f" + feed + "\n"
+						if(j==1){
+							g+="g1x"+(cutout[i][j].X/grid).toFixed(3) + "y" + (cutout[i][j].Y/grid).toFixed(3)+ "f" + feed + "\n"
+						}
+						else{
+							g+="g1x"+(cutout[i][j].X/grid).toFixed(3) + "y" + (cutout[i][j].Y/grid).toFixed(3)+ "\n"
+						}
 					}
-					g+="g1x"+(cutout[i][0].X/grid).toFixed(3) + "y" + (cutout[i][0].Y/grid).toFixed(3)+ "f" + feed + "\n"
+					g+="g1x"+(cutout[i][0].X/grid).toFixed(3) + "y" + (cutout[i][0].Y/grid).toFixed(3)+ "\n"
 				}
 
 				g+="g0z0.1\n"
@@ -244,8 +259,6 @@ function make(){
 			description :  ''
 		})
 
-
-
 	}
 	else if(output=='dxf'){
 
@@ -261,14 +274,12 @@ function make(){
 			dxf+="SEQEND\n0\n"
 		}
 	
+		dxf+="ENDSEC\n0\nEOF"
 
-	dxf+="ENDSEC\n0\nEOF"
-	//console.log(dxf)
-
-	var link = document.getElementById("download")
-	link.setAttribute("href", "data:text/plain;base64," + btoa(dxf))
-	link.setAttribute("download", name + ".dxf")
-	link.click()
+		var link = document.getElementById("download")
+		link.setAttribute("href", "data:text/plain;base64," + btoa(dxf))
+		link.setAttribute("download", name + ".dxf")
+		link.click()
 
 	}
 

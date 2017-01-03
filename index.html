@@ -35,7 +35,8 @@
 
 
 //TODO
-
+//
+//fillet inside/out
 
 $(window).resize(function(){
 	draw()
@@ -63,6 +64,7 @@ var dogbones = []
 var bones =[]
 var dbo
 var inside = true
+var fillets = []
 
 var sf = 1
 
@@ -139,6 +141,9 @@ $("#text-area").keyup(function(e){
 			pts = cmd.substring(6).split(',')
 			scalePts(pts)
 			circle(pts)	
+		}
+		if(cmd=="fillet"){
+			makeFillets()
 		}
 		else if(cmd.substring(0,4)=="line"){
 			cmd = rmComma(cmd,4)
@@ -334,7 +339,7 @@ $("#text-area").keyup(function(e){
 			
 		}
 		else{
-			cmd = "FabMo CAD \(enter \'?\' for help\)"
+			cmd = "FabMo CAD \(\'?\' for help\)"
 		}
 
 		//console.log(cmd)
@@ -637,6 +642,20 @@ function makePath(){
 	//find90()
 	draw()
 }
+
+function makeFillets(){
+
+
+	for(i=0;i<polygons.length;i++){
+		for(j=0;j<polygons[i].length;j++){
+			
+	
+
+		}
+	}
+
+}
+
 
 function find90(){
 
