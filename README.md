@@ -12,7 +12,7 @@ dogbone (create dogbone fillets)
 pocket (create pocket toolpath)
 makeg (download gcode)
 
-![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/cad/cad1.png)
+![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad1.png)
 
 
 [shopbottools.com](http://shopbottools.com)
