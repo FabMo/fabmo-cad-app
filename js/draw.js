@@ -86,19 +86,18 @@ function draw(){
 
 		ctx.beginPath()
 		for(j=0;j<polygons[i].length;j++){
+			//console.log(polygons[i][j].X)
 			ctx.lineTo(polygons[i][j].X*gridSpace*sf,0-(polygons[i][j].Y*gridSpace*sf))
 		}
 		ctx.stroke()
 	}
 
-
+	//start point
 	if(polygons.length>0){
-
 		ctx.fillStyle='#000'
 		ctx.beginPath()
-		ctx.arc(polygons[0][0].X*gridSpace*sf,0-polygons[0][0].Y*gridSpace*sf,sf,0,Math.PI*2)
+		//ctx.arc(polygons[0][0].X*gridSpace*sf,0-polygons[0][0].Y*gridSpace*sf,sf,0,Math.PI*2)
 		ctx.fill()
-
 	}
 
 	//start end point
@@ -181,6 +180,34 @@ function draw(){
 	}
 	ctx.stroke()
 	ctx.fill()
+
+	ctx.lineWidth=1.1*sf
+	ctx.strokeStyle='#333'
+	for(i=0;i<fillets.length;i++){
+				
+		ctx.beginPath()
+
+		for(j=0;j<fillets[i].length;j++){
+			//ctx.lineTo(fillets[i][j].X*gridSpace*sf,0-fillets[i][j].Y*gridSpace*sf)
+		}
+		//ctx.lineTo(fillets[i][0].X*gridSpace*sf,0-fillets[i][0].Y*gridSpace*sf)
+		ctx.stroke()
+	}
+
+	/*
+	ctx.fillStyle='#ff0000'
+	for(i=0;i<filletIn.length;i++){
+		ctx.beginPath()
+		ctx.arc(filletIn[i].X*gridSpace*sf,0-filletIn[i].Y*gridSpace*sf,sf,0,Math.PI*2)
+		ctx.fill()
+	}
+	ctx.fillStyle='#0000ff'
+	for(i=0;i<filletOut.length;i++){
+		ctx.beginPath()
+		ctx.arc(filletOut[i].X*gridSpace*sf,0-filletOut[i].Y*gridSpace*sf,sf,0,Math.PI*2)
+		ctx.fill()
+	}
+	*/
 
 
 }

@@ -36,7 +36,7 @@
 
 //TODO
 //
-//fillet inside/out
+//layers
 
 $(window).resize(function(){
 	draw()
@@ -64,7 +64,14 @@ var dogbones = []
 var bones =[]
 var dbo
 var inside = true
+
+var chamfer = false
+var chamfers = []
+
+var fillet = false
 var fillets = []
+var filletOut = []
+var filletIn = []
 
 var sf = 1
 
@@ -89,8 +96,8 @@ var polygons = []
 var pockets = []
 var cutout = []
 
-
 var help="\
+chamfer (toggle chamfer)<br>\n\
 circle \'x1\',\'y1\',\'r\'<br>\n\
 clear \'new drawing\'<br>\n\
 cutdepth=\'z\'<br>\n\
@@ -99,6 +106,7 @@ cutout (offset toolpath out)<br>\n\
 dogbone (make dog-bone fillets)<br>\n\
 dogbone= \'1\' \'-1\'<br>\n\
 feedrate=\'inch/sec\'<br>\n\
+fillet (toggle fillet)<br>\n\
 g,\'gcode\'<br>\n\
 grid=\'space\'<br>\n\
 line \'x1\',\'y1',\'x2\',\'y2\' <br>\n\
@@ -109,7 +117,7 @@ makeg (download gcode)<br>\n\
 makesbp (download sbp)<br>\n\
 mousewheel/pinch \'zoom\'<br>\n\
 name= \'filename\'<br>\n\
-passdepth=\'z\' or \'-1\' for tool diameter<br>\n\
+passdepth=\'z\' or \'-1\' for tool diameter (default -1)<br>\n\
 output=\'dxf\' \'gcode\' \'sbp\'<br>\n\
 pocket (pocket toolpath)<br>\n\
 plungerate=\'inch/sec\'<br>\n\
@@ -136,6 +144,15 @@ $("#text-area").keyup(function(e){
 		cmd = cmd.toLowerCase()
 
 		//geometry
+		if(cmd=="chamfer"){
+			fillet=false
+			if(chamfer==true){
+				chamfer=false
+			}	
+			else{
+				chamfer=true
+			}
+		}
 		if(cmd.substring(0,6)=="circle"){
 			cmd = rmComma(cmd,6)
 			pts = cmd.substring(6).split(',')
@@ -143,7 +160,13 @@ $("#text-area").keyup(function(e){
 			circle(pts)	
 		}
 		if(cmd=="fillet"){
-			makeFillets()
+			chamfer=false
+			if(fillet==true){
+				fillet=false
+			}	
+			else{
+				fillet=true
+			}
 		}
 		else if(cmd.substring(0,4)=="line"){
 			cmd = rmComma(cmd,4)
@@ -342,13 +365,12 @@ $("#text-area").keyup(function(e){
 			cmd = "FabMo CAD \(\'?\' for help\)"
 		}
 
-		//console.log(cmd)
-		document.getElementById('text-area').value = cmd + '\n\>\>'
-
-		//$("#text-area").blur()
-		
+		document.getElementById('text-area').value = cmd + '\n\>\>'		
 		makePath()
-		draw()		
+		draw()
+
+		//console.log(cmd)
+		//$("#text-area").blur()		
 	}
 })
 
@@ -374,12 +396,17 @@ function undo(){
 		point = [lines[lines.length-1][2],lines[lines.length-1][3]]
 	}
 	else{
+		lines.pop()
 		point=[0,0]
 	}
+	console.log(lines)
 	makePath()
 }
 
 function clearAll(){
+	fillets=[]
+	filletIn=[]
+	filletOut=[]
 	bones=[]
 	stock=[4,4]
 	lines=[]
@@ -441,18 +468,13 @@ function makeDogbones(pts){
 	r=parseFloat(tool/2*grid)
 
 	v=Math.ceil(r*2*Math.PI*30)
-	//console.log(v)
 
 	dogbones.push([])
 		for(j=0;j<=v;j++){
 			dogbones[dogbones.length-1].push((Cx)+Math.sin((Math.PI*2)/v*j)*r)
 			dogbones[dogbones.length-1].push((Cy)+Math.cos((Math.PI*2)/v*j)*r)
-			//dogbones[dogbones.length-1].push({X:(Cy)+Math.sin((Math.PI*2)/v*j)*r,Y:(Cx)+Math.cos((Math.PI*2)/v*j)*r})
 		}
-
 	}
-
-	//console.log(dogbones)
 	makePath()
 	draw()
 
@@ -465,15 +487,13 @@ function circle(pts){
 	Cy=parseFloat(pts[1])
 	r=parseFloat(pts[2])
 	v=Math.ceil(r*2*Math.PI*30)
-	//console.log(v)
 
 	lines.push([])
 		for(i=0;i<=v;i++){
 			lines[lines.length-1].push((Cx)+Math.sin((Math.PI*2)/v*i)*r)
 			lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*i)*r)
 		}
-	
-	//console.log(lines)
+
 	point=[Cx,Cy]
 	//point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
 }
@@ -494,27 +514,20 @@ function star(pts){
 			j+=2
 		}
 	}
-
 	point=[Cx,Cy]
 	console.log(lines)
-
 }
 
 function zoomExtents(s){
-
 	console.log(s[1]*gridSpace*sf)
 	console.log(ctx.canvas.height)
-
 }
 
-
 function defineStock(pts){
-	stock=[]
-	
+	stock=[]	
 	panX=0-((pts[0]/2)*grid*gridSpace*sf)
 	panY=(pts[1]/2)*grid*gridSpace*sf
 	stock.push(parseFloat(pts[0]*grid),parseFloat(pts[1]*grid))
-
 	draw()
 }
 
@@ -541,60 +554,56 @@ function makePath(){
 	
 	}
 	else if(inside==false){
-	
-		var subtract = []
+		var difference = []
 	
 		for(i=0;i<dogbones.length;i++){
-			subtract.push([])
+			difference.push([])
 			for(j=0;j<dogbones[i].length;j+=2){
-				subtract[subtract.length-1].push({X:dogbones[i][j]*scale,Y:dogbones[i][j+1]*scale})
+				difference[difference.length-1].push({X:dogbones[i][j]*scale,Y:dogbones[i][j+1]*scale})
 			}			
 		}
-	console.log(subtract)
 	}
 
 	while(paths.length>0){
 
-	polygons.push(paths[0])
-	paths.splice(0,1)
+		polygons.push(paths[0])
+		paths.splice(0,1)
 
-	for(i=0;i<paths.length;i++){
-		end = polygons[polygons.length-1][polygons[polygons.length-1].length-1]
-		start = polygons[polygons.length-1][0]
+		for(i=0;i<paths.length;i++){
+			end = polygons[polygons.length-1][polygons[polygons.length-1].length-1]
+			start = polygons[polygons.length-1][0]
 
-		if((paths[i][0].X==end.X)&&(paths[i][0].Y==end.Y)){
-			for(j=0;j<paths[i].length;j++){
-				polygons[polygons.length-1].push(paths[i][j])
+			if((paths[i][0].X==end.X)&&(paths[i][0].Y==end.Y)){
+				for(j=0;j<paths[i].length;j++){
+					polygons[polygons.length-1].push(paths[i][j])
+				}
+				paths.splice(i,1)
+				i--
 			}
-			paths.splice(i,1)
-			i--
+			else if((paths[i][paths[i].length-1].X==end.X)&&(paths[i][paths[i].length-1].Y==end.Y)){
+				for(j=paths[i].length-1;j>=0;j--){
+					polygons[polygons.length-1].push(paths[i][j])
+				}
+				paths.splice(i,1)
+				i--
+			}
+			else if((paths[i][0].X==start.X)&&(paths[i][0].Y==start.Y)){
+				for(j=0;j<paths[i].length;j++){
+					polygons[polygons.length-1].splice(0,0,paths[i][j])
+				}
+				paths.splice(i,1)
+				i--
+			}
+			else if((paths[i][paths[i].length-1].X==start.X)&&(paths[i][paths[i].length-1].Y==start.Y)){
+				for(j=paths[i].length-1;j>=0;j--){
+					polygons[polygons.length-1].splice(0,0,paths[i][j])
+				}
+				paths.splice(i,1)
+				i--
+			}		
 		}
-		else if((paths[i][paths[i].length-1].X==end.X)&&(paths[i][paths[i].length-1].Y==end.Y)){
-			for(j=paths[i].length-1;j>=0;j--){
-				polygons[polygons.length-1].push(paths[i][j])
-			}
-			paths.splice(i,1)
-			i--
-		}
-		else if((paths[i][0].X==start.X)&&(paths[i][0].Y==start.Y)){
-			for(j=0;j<paths[i].length;j++){
-				polygons[polygons.length-1].splice(0,0,paths[i][j])
-			}
-			paths.splice(i,1)
-			i--
-		}
-		else if((paths[i][paths[i].length-1].X==start.X)&&(paths[i][paths[i].length-1].Y==start.Y)){
-			for(j=paths[i].length-1;j>=0;j--){
-				polygons[polygons.length-1].splice(0,0,paths[i][j])
-			}
-			paths.splice(i,1)
-			i--
-		}		
+
 	}
-
-	}
-
-	//console.log(polygons)
 
 	for(i=0;i<polygons.length;i++){
 		var orientation = ClipperLib.Clipper.Orientation(polygons[i])
@@ -609,9 +618,6 @@ function makePath(){
 	var cpr = new ClipperLib.Clipper()
 	cpr.AddPaths(polygons, ClipperLib.PolyType.ptSubject, true)
 
-
-	//Number ClipType {ctIntersection: 0, ctUnion: 1, ctDifference: 2, ctXor: 3}
-
 	var solution_paths = new ClipperLib.Paths()
 	cpr.Execute(ClipperLib.ClipType.ctUnion, solution_paths, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero)
 	polygons=solution_paths
@@ -620,13 +626,11 @@ function makePath(){
 
 		cpr = new ClipperLib.Clipper()
 		cpr.AddPaths(polygons, ClipperLib.PolyType.ptSubject, true)
-		cpr.AddPaths(subtract, ClipperLib.PolyType.ptClip, true)
+		cpr.AddPaths(difference, ClipperLib.PolyType.ptClip, true)
 		cpr.Execute(ClipperLib.ClipType.ctDifference, solution_paths, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero)
 		polygons=solution_paths
 
 	}
-
-	
 
 	polygons = ClipperLib.JS.Clean(polygons, 0.015*scale)
 
@@ -637,22 +641,231 @@ function makePath(){
 		}
 		polygons[i].push(polygons[i][0])
 	}
-	//console.log(polygons)
-	
-	//find90()
-	draw()
+
+	if((fillet==true)||(chamfer==true)){
+		makeFillets()
+	}
 }
 
 function makeFillets(){
 
+	fillets=[]
+	chamfers=[]
+
+	var clip = []
+	var temp = []
+	var fc = [] 
 
 	for(i=0;i<polygons.length;i++){
-		for(j=0;j<polygons[i].length;j++){
-			
-	
+		clip.push([])
+		chamfers.push([])
+		for(j=0;j<polygons[i].length-1;j++){
+			fillets.push(polygons[i][j])
 
+			if((j!=0)&&(j!=polygons[i].length-1)){
+				fillets[fillets.length-1].x2=polygons[i][j+1].X
+				fillets[fillets.length-1].y2=polygons[i][j+1].Y
+
+				fillets[fillets.length-1].x3=polygons[i][j-1].X
+				fillets[fillets.length-1].y3=polygons[i][j-1].Y
+
+				angle = ((Math.atan2(polygons[i][j+1].X-polygons[i][j].X, polygons[i][j+1].Y-polygons[i][j].Y) - Math.atan2(polygons[i][j].X-polygons[i][j-1].X,polygons[i][j].Y-polygons[i][j-1].Y) + Math.PI * 2) % (Math.PI * 2)) - Math.PI
+			}
+			else if(j==0){
+				fillets[fillets.length-1].x2=polygons[i][j+1].X
+				fillets[fillets.length-1].y2=polygons[i][j+1].Y
+
+				fillets[fillets.length-1].x3=polygons[i][polygons[i].length-2].X
+				fillets[fillets.length-1].y3=polygons[i][polygons[i].length-2].Y
+
+				var angle = ((Math.atan2(polygons[i][j+1].X-polygons[i][j].X, polygons[i][j+1].Y-polygons[i][j].Y) - Math.atan2(polygons[i][j].X-polygons[i][polygons[i].length-2].X,polygons[i][j].Y-polygons[i][polygons[i].length-2].Y) + Math.PI * 2) % (Math.PI * 2)) - Math.PI
+			}
+
+			//console.log(angle*(180/Math.PI))
+
+			var dist = Math.abs( ((tool)*grid) / (Math.sin(angle)) )
+			var d2 = Math.abs( ((tool/2)*grid) * (Math.tan((Math.PI-angle)/2)) )
+			var d3 = ((tool/2)*grid)
+			
+			var x1 = fillets[fillets.length-1].X
+			var y1 = fillets[fillets.length-1].Y
+
+			var x2 = fillets[fillets.length-1].x2
+			var y2 = fillets[fillets.length-1].y2
+
+			var x3 = fillets[fillets.length-1].x3
+			var y3 = fillets[fillets.length-1].y3
+
+			var l1 = Math.sqrt( (Math.pow(Math.abs(x1-x2),2)) + (Math.pow(Math.abs(y1-y2),2)) )
+			var l2 = Math.sqrt( (Math.pow(Math.abs(x1-x3),2)) + (Math.pow(Math.abs(y1-y3),2)) )
+			
+			//fillet min length
+			if((l1>(d3))&&(l2>(d3))){
+
+				d = Math.sqrt( (Math.pow((x1-x3),2)) + (Math.pow((y1-y3),2)) ) 
+				r = dist/d 
+
+				x4 = r * x3 + (1 - r) * x1 
+				y4 = r * y3 + (1 - r) * y1 
+
+				temp.push({X:x4,Y:y4})
+
+				r = d2/d
+				x4 = r * x3 + (1 - r) * x1 
+				y4 = r * y3 + (1 - r) * y1 
+			
+				clip[clip.length-1].push({X:x4,Y:y4})
+
+				r = d3/d
+				x4 = r * x3 + (1 - r) * x1 
+				y4 = r * y3 + (1 - r) * y1 
+				chamfers[chamfers.length-1].push({X:x4,Y:y4})
+	
+				//
+
+				var d = Math.sqrt( (Math.pow((x1-x2),2)) + (Math.pow((y1-y2),2)) ) //distance
+				var r = dist/d 
+
+				var x4 = r * x2 + (1 - r) * x1 
+				var y4 = r * y2 + (1 - r) * y1 
+
+				temp.push({X:x4,Y:y4})
+
+				var r = d2/d
+				x4 = r * x2 + (1 - r) * x1 
+				y4 = r * y2 + (1 - r) * y1
+				clip[clip.length-1].push({X:x4,Y:y4})
+
+				r = d3/d
+				x4 = r * x2 + (1 - r) * x1 
+				y4 = r * y2 + (1 - r) * y1 
+				chamfers[chamfers.length-1].push({X:x4,Y:y4})
+			}
+			else{
+				clip[clip.length-1].push({X:x1,Y:y1})
+				chamfers[chamfers.length-1].push({X:x1,Y:y1})
+			}
 		}
 	}
+
+
+	fillets=[]
+
+	for(i=0;i<temp.length-1;i+=2){
+		fillets.push({X: ((temp[i].X+temp[i+1].X)/2), Y:((temp[i].Y+temp[i+1].Y)/2) })
+	}	
+	
+	fc = fillets
+
+	temp=[]
+	//console.log(fillets)
+	for(i=0;i<fillets.length;i++){
+	
+	Cx=parseFloat(fillets[i].X)
+	Cy=parseFloat(fillets[i].Y)
+	r=parseFloat(tool/2*grid)
+
+	v=Math.ceil(r*2*Math.PI*30)
+	//console.log(v)
+
+	temp.push([])
+		for(j=0;j<=v;j++){
+			temp[temp.length-1].push({X:(Cx)+Math.sin((Math.PI*2)/v*j)*r,Y:(Cy)+Math.cos((Math.PI*2)/v*j)*r })
+		}
+	}
+
+	fillets=temp
+	filletIn=[]
+	filletOut=[]
+
+	console.log(fc)
+
+	if(chamfer==false){
+
+   	// 0 = false
+   	//-1 = on
+   	// 1 = in
+	
+		for(i=0;i<fc.length;i++){
+			for(j=0;j<clip.length;j++){
+				if(fc[i]!=undefined){
+					inpg = ClipperLib.Clipper.PointInPolygon(fc[i], clip[j])
+					if(inpg==1){
+						filletIn.push(fc[i])		
+						fc.splice(i,1)
+						i--
+					}
+				}
+			}
+
+		}
+	
+		filletOut=fc
+
+		temp = []
+		for(i=0;i<filletIn.length;i++){
+			Cx=parseFloat(filletIn[i].X)
+			Cy=parseFloat(filletIn[i].Y)
+			r=parseFloat(tool/2*grid)
+			v=Math.ceil(r*2*Math.PI*30)
+			temp.push([])
+			for(j=0;j<=v;j++){
+				temp[temp.length-1].push({X:(Cx)+Math.sin((Math.PI*2)/v*j)*r,Y:(Cy)+Math.cos((Math.PI*2)/v*j)*r })
+			}
+		}
+		filletIn = temp
+
+		//FilletInside
+		solution_paths = new ClipperLib.Paths()
+		ClipperLib.JS.ScaleUpPaths(clip, scale)
+		ClipperLib.JS.ScaleUpPaths(filletIn, scale)
+
+		cpr = new ClipperLib.Clipper()
+		cpr.AddPaths(clip, ClipperLib.PolyType.ptSubject, true)
+		cpr.AddPaths(filletIn, ClipperLib.PolyType.ptClip, true)
+		cpr.Execute(ClipperLib.ClipType.ctUnion, solution_paths, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero)
+		clip=solution_paths
+
+		//ClipperLib.JS.ScaleDownPaths(clip, scale)
+	
+		temp = []
+		for(i=0;i<filletOut.length;i++){
+			Cx=parseFloat(filletOut[i].X)
+			Cy=parseFloat(filletOut[i].Y)
+			r=parseFloat(tool/2*grid)
+			v=Math.ceil(r*2*Math.PI*30)
+			temp.push([])
+			for(j=0;j<=v;j++){
+				temp[temp.length-1].push({X:(Cx)+Math.sin((Math.PI*2)/v*j)*r,Y:(Cy)+Math.cos((Math.PI*2)/v*j)*r })
+			}
+		}
+		filletOut = temp
+
+		//fillet outside
+		solution_paths = new ClipperLib.Paths()
+		ClipperLib.JS.ScaleUpPaths(filletOut, scale)
+
+		cpr = new ClipperLib.Clipper()
+		cpr.AddPaths(clip, ClipperLib.PolyType.ptSubject, true)
+		cpr.AddPaths(filletOut, ClipperLib.PolyType.ptClip, true)
+		cpr.Execute(ClipperLib.ClipType.ctDifference, solution_paths, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero)
+		clip=solution_paths
+
+		clip = ClipperLib.JS.Clean(clip, 0.015*scale)
+
+		ClipperLib.JS.ScaleDownPaths(clip, scale)
+		ClipperLib.JS.ScaleDownPaths(filletOut, scale)
+		ClipperLib.JS.ScaleDownPaths(filletIn, scale)
+
+		polygons=clip
+
+		}
+		else{
+			for(i=0;i<chamfers.length;i++){
+				chamfers[i].push(chamfers[i][0])
+			}
+			polygons=chamfers
+		}
 
 }
 
@@ -661,7 +874,6 @@ function find90(){
 
 	bones=[]
 
-	//dbo = (Math.sqrt(Math.pow((tool/2),2)/2)*grid)
 	dbo = (tool/2)*grid
 
 	for(i=0;i<polygons.length;i++){
@@ -673,7 +885,6 @@ function find90(){
 				var a = Math.atan2(polygons[i][j+1].X-polygons[i][j].X, polygons[i][j+1].Y-polygons[i][j].Y)
 			}
 			else if(j==0){
-				//console.log(polygons)
 				var angle = ((Math.atan2(polygons[i][j+1].X-polygons[i][j].X, polygons[i][j+1].Y-polygons[i][j].Y) - Math.atan2(polygons[i][j].X-polygons[i][polygons[i].length-2].X,polygons[i][j].Y-polygons[i][polygons[i].length-2].Y) + Math.PI * 2) % (Math.PI * 2)) - Math.PI;
 				var a = Math.atan2(polygons[i][j+1].X-polygons[i][j].X, polygons[i][j+1].Y-polygons[i][j].Y)
 			}
@@ -767,78 +978,78 @@ function dogbonePts(dbin){
 
 function pocket(){
 
-cutout=[]
+	cutout=[]
 
-pockets=polygons
+	pockets=polygons
 
-for(i=0;i<pockets.length;i++){
-	pockets[i].pop()
-	for(j=0;j<pockets[i].length;j++){		
+	for(i=0;i<pockets.length;i++){
+		pockets[i].pop()
+		//for(j=0;j<pockets[i].length;j++){		
+		//}
 	}
-}
-ClipperLib.JS.ScaleUpPaths(pockets, scale)
-var co = new ClipperLib.ClipperOffset(0.25, 0.25)
-co.AddPaths(pockets, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon)
+	ClipperLib.JS.ScaleUpPaths(pockets, scale)
+	var co = new ClipperLib.ClipperOffset(0.25, 0.25)
+	co.AddPaths(pockets, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon)
 
-pockets=[]
-o=1
-while(o>0){
-	offset = new ClipperLib.Paths()
+	pockets=[]
+	o=1
+	while(o>0){
+		offset = new ClipperLib.Paths()
 
-	co.Execute(offset,-(tool/2*grid*o) * scale)
+		co.Execute(offset,-(tool/2*grid*o) * scale)
 
-	if(offset.length!=0){
-		o++
-		for(i=0;i<offset.length;i++){
-			pockets.push(offset[i])
+		if(offset.length!=0){
+			o++
+			for(i=0;i<offset.length;i++){
+				pockets.push(offset[i])
+			}
+		}
+		else{
+			o=0
 		}
 	}
-	else{
-		o=0
-	}
-}
 
-pockets.reverse()
+	pockets.reverse()
 
-ClipperLib.JS.ScaleDownPaths(pockets, scale)
+	ClipperLib.JS.ScaleDownPaths(pockets, scale)
 
-//sort
+	//TODO sort
 
-draw()
+	draw()
 
 }
 
 
 function cutOut(out){
 
-pockets=[]
+	pockets=[]
 
-cutout=polygons
+	cutout=polygons
 
-for(i=0;i<cutout.length;i++){
-	cutout[i].pop()
-	for(j=0;j<cutout[i].length;j++){		
+	for(i=0;i<cutout.length;i++){
+		cutout[i].pop()
+		//for(j=0;j<cutout[i].length;j++){		
+		//}
 	}
-}
 
-ClipperLib.JS.ScaleUpPaths(cutout, scale)
-var co = new ClipperLib.ClipperOffset(0.25, 0.25)
-co.AddPaths(cutout, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon)
-cutout = new ClipperLib.Paths()
-if(out==true){
-	co.Execute(cutout,(tool/2*grid) * scale)
-}
-else if(out==false){
-	co.Execute(cutout,-(tool/2*grid) * scale)
-}
+	ClipperLib.JS.ScaleUpPaths(cutout, scale)
+	var co = new ClipperLib.ClipperOffset(0.25, 0.25)
+	co.AddPaths(cutout, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon)
+	cutout = new ClipperLib.Paths()
+	if(out==true){
+		co.Execute(cutout,(tool/2*grid) * scale)
+	}
+	else if(out==false){
+		co.Execute(cutout,-(tool/2*grid) * scale)
+	}
 
-ClipperLib.JS.ScaleDownPaths(cutout, scale)
+	ClipperLib.JS.ScaleDownPaths(cutout, scale)
 
-draw()
+	draw()
 
-}
+	}
 
-$("body").keydown(function(e){
+	$("body").keydown(function(e){
 
 	if(e.keyCode == 37){
 		//console.log("left")
