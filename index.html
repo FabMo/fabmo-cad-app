@@ -49,7 +49,7 @@ var gridIncrement = 10
 var grid = 4 //1/4"
 var stock = []
 var tool = 0.125
-var units = 'sbp' //inch or mm
+var units
 var scale = 1000   //
 var layer = 0
 var output = 'gcode'  //sbp gcode dxf
@@ -233,7 +233,7 @@ $("#text-area").keyup(function(e){
 		//settings
 		else if(cmd.substring(0,9)=="cutdepth="){
 			cutDepth=parseFloat(cmd.substring(9))
-			cmd = 'cutdepth = -' + cutDepth +"\""
+			cmd = 'cutdepth = ' + cutDepth +"\""
 		}
 		else if(cmd.substring(0,9)=="feedrate="){
 			feedrate=parseFloat(cmd.substring(9))
@@ -273,7 +273,7 @@ $("#text-area").keyup(function(e){
 		}
 		else if(cmd.substring(0,10)=="passdepth="){
 			passDepth=parseFloat(cmd.substring(10))
-			cmd = 'passdepth = -' + passDepth +"\""
+			cmd = 'passdepth = ' + passDepth +"\""
 		}
 		else if(cmd.substring(0,11)=="plungerate="){
 			plungerate=parseFloat(cmd.substring(11))
@@ -859,12 +859,17 @@ function makeFillets(){
 
 		polygons=clip
 
+		for(i=0;i<polygons.length;i++){
+			polygons[i].push(polygons[i][0])
+		}
+
 		}
 		else{
 			for(i=0;i<chamfers.length;i++){
 				chamfers[i].push(chamfers[i][0])
 			}
 			polygons=chamfers
+
 		}
 
 }
@@ -1013,7 +1018,42 @@ function pocket(){
 
 	ClipperLib.JS.ScaleDownPaths(pockets, scale)
 
-	//TODO sort
+	//sort
+
+	console.log(pockets)
+
+   // 0 = false
+   //-1 = on
+   // 1 = in
+
+	temp=[]
+
+	while(pockets.length>0){
+
+	temp.push([])
+	temp[temp.length-1].push(pockets[pockets.length-1])
+	pockets.pop()
+
+	for(i=pockets.length-1;i>=0;i--){
+		inpg = ClipperLib.Clipper.PointInPolygon(pockets[i][0],temp[temp.length-1][0])
+		console.log(inpg)
+		if(inpg==1){
+			temp[temp.length-1].push(pockets[i])
+			pockets.splice(i,1)
+		}
+	}
+
+	}
+
+
+	for(i=0;i<temp.length;i++){
+		temp[i][0].reverse()
+		temp[i].reverse()
+	}
+
+	console.log(temp)
+
+	pockets=temp
 
 	draw()
 

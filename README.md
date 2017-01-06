@@ -5,7 +5,7 @@ FabMo CAD is a web app for drawing simple shapes in a browser and creating toolp
 [LIVE DEMO](http://gofabmo.org/fabmo-cad-app) 
 :smile_cat:
 
-##Command Line Example
+##Command Line Examples
 
 ```
 rect0,0,1 (draw 1" square at 0,0)
