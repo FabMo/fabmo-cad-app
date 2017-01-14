@@ -54,19 +54,35 @@ function draw(){
 	}
 
 	//dogbones
+
+	/*
+
+	ctx.lineWidth = sf
 	ctx.strokeStyle='#000'
 	for(i=0;i<dogbones.length;i++){
 		ctx.beginPath()
-		for(j=0;j<dogbones[i].length;j+=2){			
-			//ctx.lineTo((dogbones[i][j]*gridSpace*sf),(0-dogbones[i][j+1]*gridSpace*sf))
+		for(j=0;j<dogbones[i].length;j++){			
+			//ctx.lineTo((dogbones[i][j].X*gridSpace*sf),(0-dogbones[i][j].Y*gridSpace*sf))
 		}
 		ctx.stroke()	
 	}
 
+	ctx.lineWidth = sf
+	ctx.strokeStyle='#ff0000'
+	for(i=0;i<dogbonesIn.length;i++){
+		ctx.beginPath()
+		for(j=0;j<dogbonesIn[i].length;j++){			
+			//ctx.lineTo((dogbonesIn[i][j].X*gridSpace*sf),(0-dogbonesIn[i][j].Y*gridSpace*sf))
+		}
+		ctx.stroke()	
+	}
+
+	*/
+
 	//lines
 	//ctx.setLineDash([2*sf, 3*sf])
 	ctx.lineWidth=0.7*sf
-	ctx.strokeStyle='#666'
+	ctx.strokeStyle='#999'
 	for(i=0;i<lines.length;i++){
 		ctx.beginPath()
 		ctx.moveTo(lines[i][0]*gridSpace*sf,0-lines[i][1]*gridSpace*sf)
@@ -90,6 +106,22 @@ function draw(){
 			ctx.lineTo(polygons[i][j].X*gridSpace*sf,0-(polygons[i][j].Y*gridSpace*sf))
 		}
 		//ctx.lineTo(polygons[i][0].X*gridSpace*sf,0-(polygons[i][0].Y*gridSpace*sf))
+		ctx.stroke()
+	}
+
+
+	//Inside
+
+	ctx.lineWidth=0.7*sf
+	ctx.strokeStyle='#800080'
+	for(i=0;i<insidePolygons.length;i++){
+
+		ctx.beginPath()
+		for(j=0;j<insidePolygons[i].length;j++){
+			//console.log(polygons[i][j].X)
+			ctx.lineTo(insidePolygons[i][j].X*gridSpace*sf,0-(insidePolygons[i][j].Y*gridSpace*sf))
+		}
+		//ctx.lineTo(insidePolygons[i][0].X*gridSpace*sf,0-(insidePolygons[i][0].Y*gridSpace*sf))
 		ctx.stroke()
 	}
 
@@ -197,7 +229,7 @@ function draw(){
 		ctx.stroke()
 	}
 
-	/*
+	
 	ctx.fillStyle='#ff0000'
 	for(i=0;i<filletIn.length;i++){
 		ctx.beginPath()
@@ -210,7 +242,7 @@ function draw(){
 		ctx.arc(filletOut[i].X*gridSpace*sf,0-filletOut[i].Y*gridSpace*sf,sf,0,Math.PI*2)
 		ctx.fill()
 	}
-	*/
+	
 
 
 }

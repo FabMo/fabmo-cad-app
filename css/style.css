@@ -26,28 +26,18 @@ body{
 	color:#000;
 }
 
-#line{
+#macro{
 	display:none;
 	position:absolute;
 	left:5px;
-	top:100px;
-	width:80px;	
-}
-
-#rectangle{
-	display:none;
-	position:absolute;
-	left:5px;
-	top:150px;
-	width:80px;	
-}
-
-#circle{
-	display:none;
-	position:absolute;
-	left:5px;
-	top:200px;	
-	width:80px;
+	top:80px;
+	height: calc(100% - 150px);
+	border-radius:8px;
+	color:#000;
+	font-size:18px;
+	font-family:mono;
+	background:rgba(200,200,200,0.5);
+	color:#000;
 }
 
 #make{
@@ -84,6 +74,16 @@ body{
 }
 
 #grid{
+	display:none;
+	position:absolute;
+	left:5px;
+	bottom:5px;	
+	color:#000;
+	font-family:arial;
+	font-size:16px;
+}
+
+#dro{
 	position:absolute;
 	left:5px;
 	bottom:5px;	
