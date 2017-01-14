@@ -20,7 +20,7 @@ makeg + 'enter' (download gcode or 'makesbp' to download the ShopBot program fil
 
 ###make a simple press-fit joint
 
-This project is for cutting plywood with a material thickness of slightly less than 1/4" (~0.248). 
+This project is for cutting plywood with a material thickness slightly less than 1/4" (~0.248). 
 
 ```
 rect0,0,1,0.75
