@@ -90,9 +90,11 @@ function make(){
 					for(j=1;j<polygons[i].length;j++){
 						sbp+="M2,"+(polygons[i][j].X/grid).toFixed(3) + "," + (polygons[i][j].Y/grid).toFixed(3) + "\n"
 					}
+					if(p==pt){
+						sbp+="JZ,0.1\n"
+					}
 				}
 
-				sbp+="JZ,0.1\n"
 			}
 		}
 		else if(pockets.length!=0){
@@ -143,7 +145,9 @@ function make(){
 					}
 					sbp+="M2,"+(cutout[i][0].X/grid).toFixed(3) + "," + (cutout[i][0].Y/grid).toFixed(3) + "\n"
 
-					sbp+="JZ,0.1\n"
+					if(p==pt){
+						sbp+="JZ,0.1\n"
+					}
 				}	
 			}
 		}
@@ -194,10 +198,11 @@ function make(){
 							g+="g1x"+(polygons[i][j].X/grid).toFixed(3) + "y" + (polygons[i][j].Y/grid).toFixed(3)+"\n"
 						}
 					}
-
+					if(p==pt){
+						g+="g0z0.1\n"
+					}
 				}				
-	
-				g+="g0z0.1\n"
+				
 			}
 		}
 		else if(pockets.length!=0){
@@ -256,9 +261,12 @@ function make(){
 						}
 					}
 					g+="g1x"+(cutout[i][0].X/grid).toFixed(3) + "y" + (cutout[i][0].Y/grid).toFixed(3)+ "\n"
+
+					if(p==pt){
+						g+="g0z0.1\n"
+					}
 				}
 
-				g+="g0z0.1\n"
 			}
 
 		}

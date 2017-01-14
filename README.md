@@ -1,12 +1,12 @@
 #FabMo CAD
 
 ##Overview
-FabMo CAD is a web app for drawing simple shapes in a browser and creating toolpaths for ShopBot tools and other 3 axis CNC router that use standard Gcode.  
+FabMo CAD is a web app for drawing simple shapes in a browser and creating toolpaths for ShopBot tools and other 3 axis CNC routers that run standard Gcode.  
 [LIVE DEMO](http://gofabmo.org/fabmo-cad-app) 
 
 ##Examples
 
-###drawing with commands
+###Drawing with Commands
 
 ```
 rect0,0,1 + 'enter' (draw 1" square at 0,0)
@@ -17,9 +17,9 @@ makeg + 'enter' (download gcode or 'makesbp' to download the ShopBot program fil
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad1.png)
 
-###make a simple press-fit joint
+###Simple Press-Fit Joint
 
-This project is for cutting plywood with a material thickness slightly less than 1/4" (~0.248). 
+This project is for cutting plywood with a material thickness slightly less than 1/4" (~0.248"). 
 
 ```
 rect0,0,1,0.75
