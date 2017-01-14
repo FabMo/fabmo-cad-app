@@ -36,7 +36,7 @@ dogbone=1
 fillet
 cutdepth=0.26 (default = 0.05")
 cutout
-makesbp
+makesbp (or makeg for Gcode)
 ```
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad2.png)  
