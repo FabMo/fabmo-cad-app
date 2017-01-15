@@ -66,7 +66,7 @@ cutout
 
 tool diameter: 0.125"  
 pass depth: tool diameter  
-cut depth: tool diameter  
+cut depth: 0.05"  
 fillet radius: tool radius  
 feedrate: 0.5 inch/sec  
 plunge rate: 0.2 inch/sec  
