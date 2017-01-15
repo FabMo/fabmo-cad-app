@@ -19,7 +19,7 @@ makeg + 'enter' (download gcode or 'makesbp' to download the ShopBot program fil
 
 ###Simple Press-Fit Joint
 
-This project is for cutting plywood with a material thickness slightly less than 1/4" (~0.248"). 
+This project is designed for machining plywood with a material thickness slightly less than 1/4" (~0.248") and using a 1/8" endmill to make a simple press fit joint. 
 
 ```
 rect0,0,1,0.75
@@ -33,19 +33,43 @@ line0.252,1
 line0.252,1.25
 dogbone=1
 fillet
-cutdepth=0.26 (default = 0.05")
+cutdepth=0.26
 cutout
-makesbp (or makeg for Gcode)
+makeg
 ```
+
+####Make Commands
+
+makesbp (download ShopBot program)  
+makeg (download gcode)  
+makedxf (download dxf)  
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad2.png)  
 
-default tool diameter: 0.125"  
-default fillet radius: tool radius  
-default feedrate: 0.5 inch/sec  
-default plungerate: 0.2 inch/sec  
-
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/preview2.png)  
+
+###Macros
+
+The 'macro' command will show/hide the macro text area.  
+Copy and paste the commands below into the macro text area and then type 'runmacro' + enter in the command line area in the upper left.
+
+```
+circle2,2,1.5
+circle1.3,2.5,0.25
+circle2.7,2.5,0.25
+arc2,2,1,100,260
+cutout
+```
+![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad3.png)  
+
+##Default Settings
+
+tool diameter: 0.125"  
+pass depth: tool diameter  
+cut depth: tool diameter  
+fillet radius: tool radius  
+feedrate: 0.5 inch/sec  
+plunge rate: 0.2 inch/sec  
 
 [shopbottools.com](http://shopbottools.com)
 

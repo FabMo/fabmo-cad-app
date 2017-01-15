@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<! jward 2016 >
+<! jward 2017 >
 
 <html lang="en">
 <head>
@@ -20,7 +20,7 @@
 <canvas id="cad-canvas"></canvas>
 
 <textarea id="text-area" spellcheck="false" cols="40" rows="2" autocomplete="off">FabMo CAD ('?' for help)&#13;>></textarea>
-<textarea id="macro" spellcheck="false" cols="40" rows="4" autocomplete="off"></textarea>
+<textarea id="macro" spellcheck="false" cols="22" autocomplete="on"></textarea>
 <input type="submit" id="line" value="line"/>
 <input type="submit" id="rectangle" value="rectangle"/>
 <input type="submit" id="circle" value="circle"/>
@@ -70,6 +70,8 @@ var bones =[]
 var dbo
 var inside = true
 
+var macro = []
+
 var difference = []
 var untion = []
 
@@ -106,19 +108,19 @@ var insidePolygons = []
 var pockets = []
 var cutout = []
 
-
+var toolpath
 
 var help="\
 arc \'x1\',\'y1\',\'r\',\'a1\',\'a2\'<br>\n\
 calc (eval)<br>\n\
 chamfer (toggle chamfer)<br>\n\
 circle \'x1\',\'y1\',\'r\'<br>\n\
-clear \'new drawing\'<br>\n\
+clear (new drawing)<br>\n\
 cutdepth=\'z\'<br>\n\
 cutin (offset toolpath in)<br>\n\
 cutout (offset toolpath out)<br>\n\
 dogbone (make dog-bone fillets)<br>\n\
-dogbone= \'1\',\'0\',or\'-1\'<br>\n\
+dogbone= \'1\',\'-1\'or\'0\' (for none)<br>\n\
 feedrate=\'inch/sec\'<br>\n\
 fillet (toggle fillet)<br>\n\
 g,\'gcode\'<br>\n\
@@ -130,10 +132,10 @@ make (download cut file)<br>\n\
 makedxf (download dxf)<br>\n\
 makeg (download gcode)<br>\n\
 makesbp (download sbp)<br>\n\
-mousewheel/pinch \'zoom\'<br>\n\
+mousewheel/pinch (zoom)<br>\n\
 name= \'filename\'<br>\n\
-passdepth=\'z\' or \'-1\' for tool diameter (default -1)<br>\n\
-output=\'dxf\' \'gcode\' \'sbp\'<br>\n\
+passdepth=\'z\' or \'-1\' (default: \'-1\' for tool diameter)<br>\n\
+output=\'dxf\',\'gcode\' or \'sbp\'<br>\n\
 pocket (pocket toolpath)<br>\n\
 plungerate=\'inch/sec\'<br>\n\
 rect\'x\',\'y\',\'lx\',\'ly\'<br>\n\
@@ -141,12 +143,13 @@ sbp,\'sbp command\'<br>\n\
 settings<br>\n\
 star\'x\',\'y\',\'r\'<br>\n\
 stock=\'x\',\'y\'<br>\n\
-tool=\'d\'<br>\n\
+tool=\'diameter\'<br>\n\
 touch hold (pan)<br>\n\
 units=inch<br>\n\
 "
 
 //cmd
+
 $("#text-area").keyup(function(e){
 
 	var cmd = document.getElementById('text-area').value
@@ -159,270 +162,8 @@ $("#text-area").keyup(function(e){
 		cmd = cmd.toLowerCase()
 
 		//geometry
-		if(cmd=="chamfer"){
-			fillet=false
-			if(chamfer==true){
-				chamfer=false
-			}	
-			else{
-				chamfer=true
-			}
-		}
-		if(cmd.substring(0,6)=="circle"){
-			cmd = rmComma(cmd,6)
-			pts = cmd.substring(6).split(',')
-			scalePts(pts)
-			circle(pts)	
-		}
-		if(cmd=="fillet"){
-			chamfer=false
-			if(fillet==true){
-				fillet=false
-			}	
-			else{
-				fillet=true
-			}
-		}
-		else if(cmd.substring(0,4)=="line"){
-			cmd = rmComma(cmd,4)
-			pts = cmd.substring(4).split(',')
-			scalePts(pts)
-			line(pts)
-		}
-		else if((cmd.substring(0,4)=="rect") && (cmd.substring(0,9)!="rectangle")){
-			cmd = rmComma(cmd,4)
-			pts = cmd.substring(4).split(',')
-			scalePts(pts)
-			rect(pts)
-		}
-		else if(cmd.substring(0,4)=="star"){
-			console.log('star')
-			cmd = rmComma(cmd,4)
-			pts = cmd.substring(4).split(',')
-			scalePts(pts)
-			star(pts)	
-		}
-		//toolpath & settings
-		else if(cmd.substring(0,4)=="calc"){
-			cmd = eval(cmd.substring(4))
 
-		}
-		else if(cmd=="cutin"){
-			console.log('cutin')
-			cutOut(false)
-		}
-		else if(cmd=="cutout"){
-			console.log('cutout')
-			cutOut(true)
-		}
-		else if(cmd.substring(0,2)=="g,"){
-			cmd=cmd.substring(2,cmd.length)
-			fabmo.runGCode(cmd)
-		}
-		else if(cmd=="dogbone"){
-			console.log('dogbone1')
-
-			dogbonesIn=[]			
-			dogbones=[]
-			pockets=[]
-			cutout=[]
-
-			makePath()
-
-			find90(polygons,inside,true)
-
-			inside=!inside
-			//console.log(inside)
-			find90(insidePolygons,inside,false)
-
-			inside=!inside
-		}
-		else if(cmd.substring(0,8)=="dogbone="){
-			console.log('dogbone')
-			cmd = rmComma(cmd,8)
-			if(cmd.substring(8)=='-1'){
-				inside=true
-			}
-			else if(cmd.substring(8)=='1'){
-				inside=false
-			}
-
-
-			if(cmd.substring(8)=='0'){
-				dogbonesIn=[]
-				dogbones=[]
-				pockets=[]
-				cutout=[]
-			}
-			else{			
-				dogbonesIn=[]
-				dogbones=[]
-				pockets=[]
-				cutout=[]
-
-				makePath()
-
-				find90(polygons,inside,true)
-
-				inside=!inside
-				find90(insidePolygons,inside,false)
-				inside=!inside
-			}
-		}
-		else if(cmd=="pocket"){
-			console.log('pocket')
-			pocket()
-		}
-		else if(cmd.substring(0,4)=="sbp,"){
-			cmd=cmd.substring(4,cmd.length)
-			fabmo.runSBP(cmd)
-		}
-		//settings
-		else if(cmd.substring(0,9)=="cutdepth="){
-			cutDepth=parseFloat(cmd.substring(9))
-			cmd = 'cutdepth = ' + cutDepth +"\""
-		}
-		else if(cmd.substring(0,9)=="feedrate="){
-			feedrate=parseFloat(cmd.substring(9))
-			cmd = 'feedrate = ' + feedrate +" in/sec"
-		}
-		else if(cmd.substring(0,5)=="grid="){
-			stock[0]=stock[0]/grid
-			stock[1]=stock[1]/grid
-			grid=1/(parseFloat(cmd.substring(5)))
-			//todo set zoom
-			document.getElementById('grid').innerHTML = 'grid: ' + (parseFloat(cmd.substring(5))) + "\""
-			cmd = 'grid = ' + (parseFloat(cmd.substring(5))) +"\""			
-			defineStock(stock)
-		}
-		else if(cmd=="macro"){
-
-			if(document.getElementById('macro').style.display=='inline'){			
-				$("#macro").hide(200)
-				cmd='hide macro'
-			}
-			else{
-				$("#macro").show(400)
-				cmd='show macro'
-			}
-		}
-		else if(cmd=="make"){
-			make()
-		}
-		else if(cmd.substring(0,5)=="name="){
-			name=cmd.substring(5)
-			cmd = "filename = " + name
-		}
-		else if(cmd.substring(0,7)=="output="){
-			output=(cmd.substring(7))
-			if(output=='sbp'){
-				cmd = 'output=sbp (shopbot program)'
-			}
-			else if(output=='gcode'){
-				cmd = 'output=gcode'
-			}
-			else if(output=='dxf'){
-				cmd = 'output=dxf'
-			}
-			else{
-				output = 'sbp'
-				cmd = output
-			}
-		}
-		else if(cmd.substring(0,10)=="passdepth="){
-			passDepth=parseFloat(cmd.substring(10))
-			cmd = 'passdepth = ' + passDepth +"\""
-		}
-		else if(cmd.substring(0,11)=="plungerate="){
-			plungerate=parseFloat(cmd.substring(11))
-			cmd = 'plungerate = ' + plungerate +" in/sec"
-		}
-		else if(cmd.substring(0,6)=="stock="){
-			cmd = rmComma(cmd,6)
-			pts = cmd.substring(6).split(',')			
-			defineStock(pts)	
-		}
-		else if(cmd.substring(0,5)=="tool="){
-			tool=parseFloat(cmd.substring(5))
-			cmd = 'tool diameter = ' + tool +"\""
-		}
-		else if((cmd=="units") && (cmd.length==5)){
-			cmd=units
-		}
-		else if(cmd.substring(0,6)=="units="){
-			cmd=cmd.substring(6,cmd.length)
-			if((cmd =='cm') || (cmd =='CM')){
-				units = 'cm'
-				cmd='units=cm'
-			}
-			else if((cmd =='inch')||(cmd=="\"")){
-				units = 'inch'
-				cmd='units=inch'
-			}
-		}
-		else if((cmd=="?") || (cmd=="help")){
-			d = new Date()
-			console.log(help)
-			cmd = "console.log(help)"
-			if(fabmo.isPresent()==true){
-				fabmo.notify('info',help + '<font style=\'display:none\'>' + d.toLocaleString() + '</font>')
-			}
-			else{
-				help = help.replace(/<br>/g,'')
-				alert(help)
-			}
-		}
-		else if(cmd=="settings"){
-
-			var settings="\
-			stock = " + (stock[0]/grid) + "," + (stock[1]/grid) +" <br>\n\
-			tool diameter = " + tool + " <br>\n\
-			units = " + units +" <br>\n\
-			"
-			settings = settings.replace(/\t/g,'')
-			console.log(settings)
-
-			d = new Date()
-
-			if(fabmo.isPresent()==true){
-				fabmo.notify('info',settings + '<font style=\'display:none\'>' + d.toLocaleString() + '</font>')
-			}
-			else{
-				settings = settings.replace(/<br>/g,'')
-				alert(settings)
-			}
-
-			cmd='console.log(settings)'
-			
-		}
-		else if(cmd=="clear"){
-			clearAll()
-			window.setTimeout("console.clear()",50)
-		}
-		else if(cmd=="makedxf"){
-			output='dxf'
-			make()
-		}
-		else if(cmd=="makeg"){
-			output='gcode'
-			make()
-		}
-		else if(cmd=="makesbp"){
-			output='sbp'
-			make()
-		}
-		else if(cmd == "undo"){
-			undo()
-		}
-		else if(cmd == "z"){
-			zoom=4
-			panX=0
-			panY=0
-			
-		}
-		else{
-			cmd = "FabMo CAD \(\'?\' for help\)"
-		}
+		runCmd(cmd)
 
 		document.getElementById('text-area').value = cmd + '\n\>\>'		
 		makePath()
@@ -432,6 +173,311 @@ $("#text-area").keyup(function(e){
 		//$("#text-area").blur()		
 	}
 })
+
+
+function runCmd(cmd){
+	if(cmd.substring(0,3)=="arc"){
+		cmd = rmComma(cmd,3)
+		pts = cmd.substring(3).split(',')
+
+		for(i=0;i<3;i++){
+			pts[i]=pts[i]*grid
+		}
+		pts[3]=parseFloat(pts[3])
+		pts[4]=parseFloat(pts[4])
+		
+		arc(pts)
+	}
+	else if(cmd=="chamfer"){
+		fillet=false
+		if(chamfer==true){
+			chamfer=false
+		}	
+		else{
+			chamfer=true
+		}
+	}
+	else if(cmd.substring(0,6)=="circle"){
+		cmd = rmComma(cmd,6)
+		pts = cmd.substring(6).split(',')
+		scalePts(pts)
+		circle(pts)	
+	}
+	else if(cmd=="fillet"){
+		chamfer=false
+		if(fillet==true){
+			fillet=false
+		}	
+		else{
+			fillet=true
+		}
+	}
+	else if(cmd.substring(0,4)=="line"){
+		cmd = rmComma(cmd,4)
+		pts = cmd.substring(4).split(',')
+		scalePts(pts)
+		line(pts)
+	}
+	else if((cmd.substring(0,4)=="rect") && (cmd.substring(0,9)!="rectangle")){
+		cmd = rmComma(cmd,4)
+		pts = cmd.substring(4).split(',')
+		scalePts(pts)
+		rect(pts)
+	}
+	else if(cmd.substring(0,4)=="star"){
+		console.log('star')
+		cmd = rmComma(cmd,4)
+		pts = cmd.substring(4).split(',')
+		scalePts(pts)
+		star(pts)	
+	}
+	//toolpath & settings
+	else if(cmd.substring(0,4)=="calc"){
+		cmd = eval(cmd.substring(4))
+	}
+	else if(cmd=="cutin"){
+		console.log('cutin')
+		cutOut(false)
+	}
+	else if(cmd=="cutout"){
+		console.log('cutout')
+		cutOut(true)
+	}
+	else if(cmd.substring(0,2)=="g,"){
+		cmd=cmd.substring(2,cmd.length)
+		fabmo.runGCode(cmd)
+	}
+	else if(cmd=="dogbone"){
+		console.log('dogbone1')
+
+		dogbonesIn=[]			
+		dogbones=[]
+		pockets=[]
+		cutout=[]
+
+		makePath()
+
+		find90(polygons,inside,true)
+
+		inside=!inside
+		//console.log(inside)
+		find90(insidePolygons,inside,false)
+
+		inside=!inside
+	}
+	else if(cmd.substring(0,8)=="dogbone="){
+		console.log('dogbone')
+		cmd = rmComma(cmd,8)
+		if(cmd.substring(8)=='-1'){
+			inside=true
+		}
+		else if(cmd.substring(8)=='1'){
+			inside=false
+		}
+		if(cmd.substring(8)=='0'){
+			dogbonesIn=[]
+			dogbones=[]
+			pockets=[]
+			cutout=[]
+		}
+		else{			
+			dogbonesIn=[]
+			dogbones=[]
+			pockets=[]
+			cutout=[]
+
+			makePath()
+
+			find90(polygons,inside,true)
+
+			inside=!inside
+			find90(insidePolygons,inside,false)
+			inside=!inside
+		}
+	}
+	else if(cmd=="pocket"){
+		console.log('pocket')
+		pocket()
+	}
+	else if(cmd.substring(0,4)=="sbp,"){
+		cmd=cmd.substring(4,cmd.length)
+		fabmo.runSBP(cmd)
+	}
+	//settings
+	else if(cmd.substring(0,9)=="cutdepth="){
+		cutDepth=parseFloat(cmd.substring(9))
+		cmd = 'cutdepth = ' + cutDepth +"\""
+	}
+	else if(cmd.substring(0,9)=="feedrate="){
+		feedrate=parseFloat(cmd.substring(9))
+		cmd = 'feedrate = ' + feedrate +" in/sec"
+	}
+	else if(cmd.substring(0,5)=="grid="){
+		stock[0]=stock[0]/grid
+		stock[1]=stock[1]/grid
+		grid=1/(parseFloat(cmd.substring(5)))
+		//todo set zoom
+		document.getElementById('grid').innerHTML = 'grid: ' + (parseFloat(cmd.substring(5))) + "\""
+		cmd = 'grid = ' + (parseFloat(cmd.substring(5))) +"\""			
+		defineStock(stock)
+	}
+	else if(cmd=="macro"){
+
+		if(document.getElementById('macro').style.display=='inline'){			
+			$("#macro").hide(400)
+			cmd='hide macro'
+		}
+		else{
+			$("#macro").show(400)
+			cmd='show macro'
+			$("#macro").focus()
+		}
+	}
+	else if(cmd=="make"){
+		make()
+	}
+	else if(cmd.substring(0,5)=="name="){
+		name=cmd.substring(5)
+		cmd = "filename = " + name
+	}
+	else if(cmd.substring(0,7)=="output="){
+		output=(cmd.substring(7))
+		if(output=='sbp'){
+			cmd = 'output=sbp (ShopBot program)'
+		}
+		else if(output=='gcode'){
+			cmd = 'output=gcode'
+		}
+		else if(output=='dxf'){
+			cmd = 'output=dxf'
+		}
+		else{
+			output = 'sbp'
+			cmd = output
+		}
+	}
+	else if(cmd.substring(0,10)=="passdepth="){
+		passDepth=parseFloat(cmd.substring(10))
+		cmd = 'passdepth = ' + passDepth +"\""
+	}
+	else if(cmd.substring(0,11)=="plungerate="){
+		plungerate=parseFloat(cmd.substring(11))
+		cmd = 'plungerate = ' + plungerate +" in/sec"
+	}
+	else if(cmd=="runmacro"){
+		console.log('runmacro')
+		m = document.getElementById('macro').value
+		macro = m.split('\n')
+		clearAll()
+
+		runMacro()
+			
+	}
+	else if(cmd.substring(0,6)=="stock="){
+		cmd = rmComma(cmd,6)
+		pts = cmd.substring(6).split(',')			
+		defineStock(pts)	
+	}
+	else if(cmd.substring(0,5)=="tool="){
+		tool=parseFloat(cmd.substring(5))
+		cmd = 'tool diameter = ' + tool +"\""
+	}
+	else if((cmd=="units") && (cmd.length==5)){
+		cmd=units
+	}
+	else if(cmd.substring(0,6)=="units="){
+		cmd=cmd.substring(6,cmd.length)
+		if((cmd =='cm') || (cmd =='CM')){
+			units = 'cm'
+			cmd='units=cm'
+		}
+		else if((cmd =='inch')||(cmd=="\"")){
+			units = 'inch'
+			cmd='units=inch'
+		}
+	}
+	else if((cmd=="?")||(cmd=="help")){
+		d = new Date()
+		console.log(help)
+		cmd = "console.log(help)"
+		if(fabmo.isPresent()==true){
+			fabmo.notify('info',help + '<font style=\'display:none\'>' + d.toLocaleString() + '</font>')
+		}
+		else{
+			help = help.replace(/<br>/g,'')
+			alert(help)
+		}
+	}
+	else if(cmd=="settings"){
+
+		var settings="\
+		stock = " + (stock[0]/grid) + "," + (stock[1]/grid) +" <br>\n\
+		tool diameter = " + tool + " <br>\n\
+		units = " + units +" <br>\n\
+		"
+		settings = settings.replace(/\t/g,'')
+		console.log(settings)
+
+		d = new Date()
+
+		if(fabmo.isPresent()==true){
+			fabmo.notify('info',settings + '<font style=\'display:none\'>' + d.toLocaleString() + '</font>')
+		}
+		else{
+			settings = settings.replace(/<br>/g,'')
+			alert(settings)
+		}
+
+		cmd='console.log(settings)'
+			
+	}
+	else if(cmd=="clear"){
+		clearAll()
+		window.setTimeout("console.clear()",50)
+	}
+	else if(cmd=="makedxf"){
+		output='dxf'
+		make()
+	}
+	else if(cmd=="makeg"){
+		output='gcode'
+		make()
+		}
+	else if(cmd=="makesbp"){
+		output='sbp'
+		make()
+	}
+	else if(cmd == "undo"){
+		undo()
+	}
+	else if(cmd == "z"){
+		zoom=4
+		panX=0
+		panY=0			
+	}
+	else{
+		cmd = "FabMo CAD \(\'?\' for help\)"
+	}
+
+}
+
+function runMacro(){
+
+	toolpath=""
+
+	for(m=0;m<macro.length;m++){
+		if((macro[m]!='cutout')&&(macro[m]!='cutin')&&(macro[m]!='pocket')){
+			runCmd(macro[m])
+		}
+		else{
+			toolpath = macro[m]
+		}
+	}
+
+	window.setTimeout("runCmd(toolpath);makePath();draw()",100)
+
+
+}
 
 
 function rmComma(s,v){
@@ -487,7 +533,7 @@ function clearAll(){
 	$('#clear').blur()
 }
 
-function scalePts(pts){
+function scalePts(pts,cmd){
 	for(i=0;i<pts.length;i++){
 		pts[i]=pts[i]*grid
 	}
@@ -519,6 +565,31 @@ function line(pts){
 		point = [lines[lines.length-1][2],lines[lines.length-1][3]]
 	}	
 }
+
+
+function arc(pts){
+
+	console.log(pts)
+	
+	Cx=parseFloat(pts[0])
+	Cy=parseFloat(pts[1])
+	r=parseFloat(pts[2])
+	a1=(parseFloat(pts[3]))*(Math.PI/180)
+	a2=(parseFloat(pts[4]))*(Math.PI/180)
+	v=Math.ceil(r*2*Math.PI*30)
+
+	a2=Math.round(((a2-a1)/(Math.PI*2))*v)
+
+	lines.push([])
+		for(i=0;i<(a2);i++){
+			lines[lines.length-1].push((Cx)+Math.sin((Math.PI*2)/v*i+a1)*r)
+			lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*i+a1)*r)
+		}
+
+	point=[Cx,Cy]
+	//point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
+}
+
 
 
 function circle(pts){
@@ -1142,6 +1213,8 @@ function pocket(){
 
 	cutout=[]
 
+	console.log(polygons)
+
 	pockets=polygons
 	for(i=0;i<insidePolygons.length;i++){
 		pockets.push(insidePolygons[i])
@@ -1289,13 +1362,13 @@ function cutOut(out){
 
 $("#cad-canvas").on('click',function(e){
 
+	ts=(e.timeStamp-ts)
+
+	if(ts<=180){
 
 	pockets=[]
 	cutout=[]
 
-	ts=(e.timeStamp-ts)
-
-	if(ts<=180){
 
 	x = Math.round(((e.originalEvent.clientX-ctx.canvas.width/2)/gridSpace/sf)-panX/gridSpace/sf)
 	y = Math.round(0-(Math.round(((e.originalEvent.clientY-ctx.canvas.height/2)/gridSpace/sf)-panY/gridSpace/sf)))
