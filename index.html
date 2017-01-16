@@ -133,9 +133,11 @@ makedxf (download dxf)<br>\n\
 makeg (download gcode)<br>\n\
 makesbp (download sbp)<br>\n\
 mousewheel/pinch (zoom)<br>\n\
+move\'x\',\'y\'<br>\n\
+movelast\'x\',\'y\'<br>\n\
 name= \'filename\'<br>\n\
-passdepth=\'z\' or \'-1\' (default: \'-1\' for tool diameter)<br>\n\
 output=\'dxf\',\'gcode\' or \'sbp\'<br>\n\
+passdepth=\'z\' or \'-1\' (default: \'-1\' for tool diameter)<br>\n\
 pocket (pocket toolpath)<br>\n\
 plungerate=\'inch/sec\'<br>\n\
 rect\'x\',\'y\',\'lx\',\'ly\'<br>\n\
@@ -217,6 +219,18 @@ function runCmd(cmd){
 		pts = cmd.substring(4).split(',')
 		scalePts(pts)
 		line(pts)
+	}
+	else if(cmd.substring(0,8)=="movelast"){
+		cmd = rmComma(cmd,8)
+		pts = cmd.substring(8).split(',')
+		scalePts(pts)
+		moveLast(pts)
+	}
+	else if(cmd.substring(0,4)=="move"){
+		cmd = rmComma(cmd,4)
+		pts = cmd.substring(4).split(',')
+		scalePts(pts)
+		move(pts)
 	}
 	else if((cmd.substring(0,4)=="rect") && (cmd.substring(0,9)!="rectangle")){
 		cmd = rmComma(cmd,4)
@@ -564,6 +578,32 @@ function line(pts){
 		lines.push(pts)
 		point = [lines[lines.length-1][2],lines[lines.length-1][3]]
 	}	
+}
+
+
+function move(pts){
+	x=parseFloat(pts[0])
+	y=parseFloat(pts[1])
+
+	for(i=0;i<lines.length;i++){
+		for(j=0;j<lines[i].length;j+=2){
+			lines[i][j]+=x
+			lines[i][j+1]+=y
+		}
+	}
+
+}
+
+function moveLast(pts){
+	x=parseFloat(pts[0])
+	y=parseFloat(pts[1])
+
+	for(i=0;i<lines[lines.length-1].length;i+=2){
+		lines[lines.length-1][i]+=x
+		lines[lines.length-1][i+1]+=y
+	}
+
+
 }
 
 
