@@ -38,9 +38,8 @@
 
 //TODO
 //
-//move command
-//arc command
-//macros
+//line join update
+//fillet curves
 
 $(window).resize(function(){
 	draw()
@@ -120,7 +119,7 @@ cutdepth=\'z\'<br>\n\
 cutin (offset toolpath in)<br>\n\
 cutout (offset toolpath out)<br>\n\
 dogbone (make dog-bone fillets)<br>\n\
-dogbone= \'1\',\'-1\'or\'0\' (for none)<br>\n\
+dogbone= \'1\',\'-1\'or\'0\' (0=none)<br>\n\
 feedrate=\'inch/sec\'<br>\n\
 fillet (toggle fillet)<br>\n\
 g,\'gcode\'<br>\n\
@@ -163,11 +162,8 @@ $("#text-area").keyup(function(e){
 		cmd = cmd.replace(/\n/g,'')
 		cmd = cmd.toLowerCase()
 
-		//geometry
-
-		runCmd(cmd)
-
-		document.getElementById('text-area').value = cmd + '\n\>\>'		
+		document.getElementById('text-area').value = runCmd(cmd) + '\n\>\>'
+		
 		makePath()
 		draw()
 
@@ -248,6 +244,7 @@ function runCmd(cmd){
 	//toolpath & settings
 	else if(cmd.substring(0,4)=="calc"){
 		cmd = eval(cmd.substring(4))
+		console.log(cmd)
 	}
 	else if(cmd=="cutin"){
 		console.log('cutin')
@@ -383,14 +380,14 @@ function runCmd(cmd){
 		m = document.getElementById('macro').value
 		macro = m.split('\n')
 		clearAll()
-
 		runMacro()
 			
 	}
 	else if(cmd.substring(0,6)=="stock="){
 		cmd = rmComma(cmd,6)
 		pts = cmd.substring(6).split(',')			
-		defineStock(pts)	
+		defineStock(pts)
+		cmd+="\""
 	}
 	else if(cmd.substring(0,5)=="tool="){
 		tool=parseFloat(cmd.substring(5))
@@ -472,6 +469,9 @@ function runCmd(cmd){
 	else{
 		cmd = "FabMo CAD \(\'?\' for help\)"
 	}
+
+
+	return cmd
 
 }
 
@@ -1097,8 +1097,14 @@ function makeFillets(pg,pgOut){
 
 		}
 		else{
+
+			//ClipperLib.JS.ScaleUpPaths(chamfer, scale)
+			//chamfer = ClipperLib.Clipper.SimplifyPolygons(chamfer, ClipperLib.PolyFillType.pftNonZero)
+			//chamfer = ClipperLib.JS.Clean(chamfer, 10*scale)
+			//ClipperLib.JS.ScaleDownPaths(chamfer, scale)
+
 			for(i=0;i<chamfers.length;i++){
-				chamfers[i].push(chamfers[i][0])
+				//chamfers[i].push(chamfers[i][0])
 			}
 
 			if(pgOut==true){
