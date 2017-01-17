@@ -20,7 +20,10 @@
 <canvas id="cad-canvas"></canvas>
 
 <textarea id="text-area" spellcheck="false" cols="40" rows="2" autocomplete="off">FabMo CAD ('?' for help)&#13;>></textarea>
-<textarea id="macro" spellcheck="false" cols="22" autocomplete="on"></textarea>
+
+<textarea id="macro" spellcheck="false" cols="22" autocomplete="on">star1,1,1&#13;fillet&#13;cutout</textarea>
+<input type="submit" id="runmacro" value="run" onclick="runMacro()"/>
+
 <input type="submit" id="line" value="line"/>
 <input type="submit" id="rectangle" value="rectangle"/>
 <input type="submit" id="circle" value="circle"/>
@@ -187,6 +190,9 @@ function runCmd(cmd){
 		arc(pts)
 	}
 	else if(cmd=="chamfer"){
+		pocket=[]
+		cutout=[]
+
 		fillet=false
 		if(chamfer==true){
 			chamfer=false
@@ -202,6 +208,9 @@ function runCmd(cmd){
 		circle(pts)	
 	}
 	else if(cmd=="fillet"){
+		pocket=[]
+		cutout=[]
+
 		chamfer=false
 		if(fillet==true){
 			fillet=false
@@ -335,11 +344,13 @@ function runCmd(cmd){
 	else if(cmd=="macro"){
 
 		if(document.getElementById('macro').style.display=='inline'){			
-			$("#macro").hide(400)
+			$("#macro").hide(200)
+			$("#runmacro").hide(100)
 			cmd='hide macro'
 		}
 		else{
-			$("#macro").show(400)
+			$("#macro").show(200)
+			$("#runmacro").show(400)
 			cmd='show macro'
 			$("#macro").focus()
 		}
@@ -377,11 +388,7 @@ function runCmd(cmd){
 	}
 	else if(cmd=="runmacro"){
 		console.log('runmacro')
-		m = document.getElementById('macro').value
-		macro = m.split('\n')
-		clearAll()
-		runMacro()
-			
+		runMacro()			
 	}
 	else if(cmd.substring(0,6)=="stock="){
 		cmd = rmComma(cmd,6)
@@ -477,10 +484,20 @@ function runCmd(cmd){
 
 function runMacro(){
 
+
+	clearAll()
+	m = document.getElementById('macro').value
+	macro = m.split('\n')
+
+
 	toolpath=""
 
 	for(m=0;m<macro.length;m++){
 		if((macro[m]!='cutout')&&(macro[m]!='cutin')&&(macro[m]!='pocket')){
+			if((macro[m]=='fillet')||(macro[m]=='chamfer')){
+				chamfer=false
+				fillet=false
+			}
 			runCmd(macro[m])
 		}
 		else{
@@ -488,8 +505,13 @@ function runMacro(){
 		}
 	}
 
-	window.setTimeout("runCmd(toolpath);makePath();draw()",100)
+	
+	makePath()
+	draw()
 
+	window.setTimeout("runCmd(toolpath);makePath();draw()",5)
+
+	$("#macro").focus()
 
 }
 
