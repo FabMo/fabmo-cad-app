@@ -16,9 +16,6 @@ function draw(){
 	//origin
 	ctx.lineWidth = 1
 	ctx.strokeStyle = '#999'
-	ctx.fillStyle = '#000'
-	ctx.arc(ctx.canvas.width/2,ctx.canvas.height/2,2,0,Math.PI*2)
-	ctx.fill()
 
 	//grid
 
@@ -46,12 +43,86 @@ function draw(){
 	ctx.translate(ctx.canvas.width/2,ctx.canvas.height/2)
 
 	//stock
+
 	if(stock.length>0){
+
 		ctx.fillStyle='rgba(0,0,200,0.1)'
 		ctx.beginPath()
 		ctx.rect(0,0,(stock[0])*gridSpace*sf,(0-stock[1])*gridSpace*sf)
 		ctx.fill()
+
+		//1" lines
+		ctx.lineWidth = sf/9
+
+		ctx.beginPath()
+		for(i=1;i<=stock[0]/grid;i++){
+			ctx.moveTo(i*gridSpace*sf*grid,0)
+			ctx.lineTo(i*gridSpace*sf*grid,0-(stock[1]*gridSpace*sf))		
+		}
+		for(i=1;i<=stock[1]/grid;i++){
+			ctx.moveTo(0,0-(i*gridSpace*sf*grid))
+			ctx.lineTo(stock[0]*gridSpace*sf,0-(i*gridSpace*sf*grid))		
+		}
+
+		ctx.stroke()
+
+		//axis lines
+		ctx.lineWidth = sf/5
+		ctx.strokeStyle='#aa0000'
+
+		ctx.beginPath()
+		ctx.moveTo(0,0)
+		ctx.lineTo((stock[0])*gridSpace*sf,0)
+		ctx.stroke()
+
+		ctx.beginPath()
+		ctx.strokeStyle='#00aa00'
+		ctx.moveTo(0,0)
+		ctx.lineTo(0,(0-stock[1])*gridSpace*sf)
+		ctx.stroke()
+
+		//dims
+
+		stockX = ((stock[0])/grid).toFixed(2)+"\""
+		stockY = ((stock[1])/grid).toFixed(2)+"\""
+
+		ctx.beginPath()
+		ctx.strokeStyle = '#333'
+		ctx.moveTo(0,7)
+		ctx.lineTo(0,15)
+		ctx.lineTo(0,11)
+		ctx.lineTo(((stock[0])*gridSpace*sf/2)-(ctx.measureText(stockX).width/2)-5,11)
+		ctx.moveTo(((stock[0])*gridSpace*sf/2)+(ctx.measureText(stockX).width/2)+5,11)
+		ctx.lineTo(((stock[0])*gridSpace*sf),11)
+		ctx.moveTo(((stock[0])*gridSpace*sf),7)
+		ctx.lineTo(((stock[0])*gridSpace*sf),15)
+
+		ctx.moveTo(3-ctx.measureText(stockY).width/2,0)
+		ctx.lineTo(-7-ctx.measureText(stockY).width/2,0)
+		ctx.moveTo(-2-ctx.measureText(stockY).width/2,0)
+		ctx.lineTo((-2-ctx.measureText(stockY).width/2),(((0-stock[1])*gridSpace*sf)/2)+10)
+		ctx.moveTo((-2-ctx.measureText(stockY).width/2),(((0-stock[1])*gridSpace*sf)/2)-10)
+		ctx.lineTo((-2-ctx.measureText(stockY).width/2),(((0-stock[1])*gridSpace*sf)))
+		ctx.moveTo((3-ctx.measureText(stockY).width/2),(((0-stock[1])*gridSpace*sf)))
+		ctx.lineTo((-7-ctx.measureText(stockY).width/2),(((0-stock[1])*gridSpace*sf)))
+		ctx.stroke()
+
+
+		ctx.fillStyle="#666"
+		ctx.font = "12px Arial";
+		ctx.fillText(stockX,((stock[0])*gridSpace*sf)/2-(ctx.measureText(stockX).width/2),15);
+
+		ctx.fillText(stockY,0-(ctx.measureText(stockY).width)-4,4-((stock[1]*gridSpace*sf)/2));
+
 	}
+
+	ctx.beginPath()
+	ctx.lineWidth = sf/3
+	//ctx.strokeStyle="#333"
+	ctx.fillStyle = '#333'
+	ctx.arc(0,0,sf,0,Math.PI*2)
+	ctx.fill()
+	//ctx.stroke()
 
 	//dogbones
 
