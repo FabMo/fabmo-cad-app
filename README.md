@@ -51,7 +51,7 @@ makedxf (download dxf)
 ###Macros
 
 The 'macro' command will show/hide the macro text area.  
-Copy and paste the commands below into the macro text area and then type 'runmacro' + enter in the command line area in the upper left.
+Copy and paste the commands below into the macro text area and then press the 'run' button.
 
 ```
 circle2,2,1.5
@@ -70,6 +70,12 @@ cut depth: 0.05"
 fillet radius: tool radius  
 feedrate: 0.5 inch/sec  
 plunge rate: 0.2 inch/sec  
+
+##Dimensions
+
+The 'dim' command will show/hide dimensions of the drawing.
+
+![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad4.png)  
 
 [shopbottools.com](http://shopbottools.com)
 

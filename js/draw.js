@@ -42,11 +42,11 @@ function draw(){
 
 	ctx.translate(ctx.canvas.width/2,ctx.canvas.height/2)
 
-	//stock
 
 	if(stock.length>0){
 
-		ctx.fillStyle='rgba(0,0,200,0.1)'
+		//stock
+		ctx.fillStyle='rgba(0,0,200,0.04)'
 		ctx.beginPath()
 		ctx.rect(0,0,(stock[0])*gridSpace*sf,(0-stock[1])*gridSpace*sf)
 		ctx.fill()
@@ -83,6 +83,8 @@ function draw(){
 
 		//dims
 
+		ctx.lineWidth = 0.5
+
 		stockX = ((stock[0])/grid).toFixed(2)+"\""
 		stockY = ((stock[1])/grid).toFixed(2)+"\""
 
@@ -110,19 +112,47 @@ function draw(){
 
 		ctx.fillStyle="#666"
 		ctx.font = "12px Arial";
-		ctx.fillText(stockX,((stock[0])*gridSpace*sf)/2-(ctx.measureText(stockX).width/2),15);
+		ctx.fillText(stockX,((stock[0])*gridSpace*sf)/2-(ctx.measureText(stockX).width/2),15)
 
-		ctx.fillText(stockY,0-(ctx.measureText(stockY).width)-4,4-((stock[1]*gridSpace*sf)/2));
+		ctx.fillText(stockY,0-(ctx.measureText(stockY).width)-4,4-((stock[1]*gridSpace*sf)/2))
 
 	}
 
+	//0,0
 	ctx.beginPath()
-	ctx.lineWidth = sf/3
-	//ctx.strokeStyle="#333"
 	ctx.fillStyle = '#333'
 	ctx.arc(0,0,sf,0,Math.PI*2)
 	ctx.fill()
-	//ctx.stroke()
+
+
+	//minMax part dims
+
+	if((dims==true)&&(xmax>0)){
+
+		/*
+		ctx.fillStyle='rgba(0,0,255,0.05)'
+		ctx.beginPath()
+		ctx.rect(xmin*gridSpace*sf,(0-(ymin*gridSpace*sf)),(xmax-xmin)*gridSpace*sf,(0-((ymax-ymin)*gridSpace*sf)))
+		ctx.fill()
+		*/
+
+		makeDim(xmin*gridSpace*sf,(0-(ymin*gridSpace*sf)),(xmax-xmin)*gridSpace*sf,(0-((ymax-ymin)*gridSpace*sf)),gridSpace*sf)
+
+		
+		//each part
+		if(dims2.length>1){
+		//ctx.fillStyle='rgba(255,0,0,0.05)'
+			for(i=0;i<dims2.length;i++){
+				/*
+				ctx.beginPath()
+				ctx.rect(dims2[i].xmin*gridSpace*sf,(0-(dims2[i].ymin*gridSpace*sf)),(dims2[i].xmax-dims2[i].xmin)*gridSpace*sf,(0-((dims2[i].ymax-dims2[i].ymin)*gridSpace*sf)))
+				ctx.fill()
+				*/
+
+				makeDim(dims2[i].xmin*gridSpace*sf,(0-(dims2[i].ymin*gridSpace*sf)),(dims2[i].xmax-dims2[i].xmin)*gridSpace*sf,(0-((dims2[i].ymax-dims2[i].ymin)*gridSpace*sf)),gridSpace*sf/2)
+			}
+		}
+	}
 
 	//dogbones
 
@@ -153,7 +183,7 @@ function draw(){
 	//lines
 	//ctx.setLineDash([2*sf, 3*sf])
 	ctx.lineWidth=0.7*sf
-	ctx.strokeStyle='#999'
+	ctx.strokeStyle='#fff'
 	for(i=0;i<lines.length;i++){
 		ctx.beginPath()
 		ctx.moveTo(lines[i][0]*gridSpace*sf,0-lines[i][1]*gridSpace*sf)
@@ -314,6 +344,51 @@ function draw(){
 		ctx.fill()
 	}
 	
+}
+
+
+
+function makeDim(x1,y1,x2,y2,space){
+
+	ctx.strokeStyle = '#bb0000'
+	ctx.fillStyle = "#bb0000"
+
+	ctx.beginPath()
+	ctx.moveTo(x1+x2+space-4,y1)
+	ctx.lineTo(x1+x2+space+4,y1)
+
+	ctx.moveTo(x1+x2+space,y1)
+	ctx.lineTo(x1+x2+space,y1+y2)
+
+	ctx.moveTo(x1+x2+space-4,y1+y2)
+	ctx.lineTo(x1+x2+space+4,y1+y2)
+
+	//
+
+	ctx.moveTo(x1,y1+y2-space-4)
+	ctx.lineTo(x1,y1+y2-space+4)
+
+	ctx.moveTo(x1,y1+y2-space)
+	ctx.lineTo(x1+x2,y1+y2-space)
+
+	ctx.moveTo(x1+x2,y1+y2-space-4)
+	ctx.lineTo(x1+x2,y1+y2-space+4)
+
+	//
+	ctx.stroke()
+
+	x = (Math.abs(x2/gridSpace/sf/grid)).toFixed(3)+"\""
+	y = (Math.abs(y2/gridSpace/sf/grid)).toFixed(3)+"\""
+
+	ctx.font = "11px Arial";
+	ctx.fillText(x,(x1+x2/2)-(ctx.measureText(x).width/2),(y1+y2)-space-2)
+
+	ctx.rotate(Math.PI/2)
+
+	ctx.fillText(y,(y1+y2/2)-(ctx.measureText(y).width/2),0-((x1+x2)+space+2))
+	//ctx.fillText(y,(x1+x2)+space,(y1+y2/2))
+	
+	ctx.rotate(-Math.PI/2)
 
 
 }

@@ -41,6 +41,7 @@
 
 //TODO
 //
+//polyline (close:true/false)
 //line join update
 //fillet curves
 
@@ -64,6 +65,13 @@ var feedrate = 0.5
 var plungerate = 0.2
 var passDepth = -1
 var name = 'cad'
+
+var dims=false
+var xmin = 10000
+var xmax	= -10000
+var ymin	= 10000
+var ymax = -10000
+var dims2 = []
 
 var dogbone = false
 var dogbones = []
@@ -121,12 +129,13 @@ clear (new drawing)<br>\n\
 cutdepth=\'z\'<br>\n\
 cutin (offset toolpath in)<br>\n\
 cutout (offset toolpath out)<br>\n\
+dim (toggle dimensions)<br>\n\
 dogbone (make dog-bone fillets)<br>\n\
 dogbone= \'1\',\'-1\'or\'0\' (0=none)<br>\n\
 feedrate=\'inch/sec\'<br>\n\
 fillet (toggle fillet)<br>\n\
 g,\'gcode\'<br>\n\
-grid=\'space\'<br>\n\
+grid=\'grid space (inch)\'<br>\n\
 line \'x1\',\'y1',\'x2\',\'y2\' <br>\n\
 line \'x2\',\'y2\'<br>\n\
 macro (show macro text area)<br>\n\
@@ -166,7 +175,7 @@ $("#text-area").keyup(function(e){
 		cmd = cmd.toLowerCase()
 
 		document.getElementById('text-area').value = runCmd(cmd) + '\n\>\>'
-		
+
 		makePath()
 		draw()
 
@@ -328,6 +337,17 @@ function runCmd(cmd){
 		cutDepth=parseFloat(cmd.substring(9))
 		cmd = 'cutdepth = ' + cutDepth +"\""
 	}
+	else if(cmd=="dim"){
+		if(dims==true){
+			dims=false
+			cmd="dim=false"
+		}
+		else{
+			dims=true
+			cmd="dim=true"
+		}
+		//minMax()
+	}
 	else if(cmd.substring(0,9)=="feedrate="){
 		feedrate=parseFloat(cmd.substring(9))
 		cmd = 'feedrate = ' + feedrate +" in/sec"
@@ -336,7 +356,9 @@ function runCmd(cmd){
 		stock[0]=stock[0]/grid
 		stock[1]=stock[1]/grid
 		grid=1/(parseFloat(cmd.substring(5)))
-		//todo set zoom
+		
+		//zoom=1
+
 		document.getElementById('grid').innerHTML = 'grid: ' + (parseFloat(cmd.substring(5))) + "\""
 		cmd = 'grid = ' + (parseFloat(cmd.substring(5))) +"\""			
 		defineStock(stock)
@@ -484,11 +506,9 @@ function runCmd(cmd){
 
 function runMacro(){
 
-
 	clearAll()
 	m = document.getElementById('macro').value
 	macro = m.split('\n')
-
 
 	toolpath=""
 
@@ -512,6 +532,57 @@ function runMacro(){
 	window.setTimeout("runCmd(toolpath);makePath();draw()",5)
 
 	$("#macro").focus()
+
+}
+
+
+function minMax(){
+
+	//TODO minMax for each part
+	//console.log("max")
+
+	xmin = 1000
+	xmax	= -1000
+	ymin	= 1000
+	ymax = -1000
+	dims2 = []
+	
+	for(i=0;i<polygons.length;i++){
+
+		dims2.push({
+			xmin:	Math.min.apply(this,$.map(polygons[i], function(o){ return o.X; })),
+			xmax:	Math.max.apply(this,$.map(polygons[i], function(o){ return o.X; })),
+			ymin:	Math.min.apply(this,$.map(polygons[i], function(o){ return o.Y; })),
+			ymax: Math.max.apply(this,$.map(polygons[i], function(o){ return o.Y; }))
+		})
+
+		if((Math.min.apply(this,$.map(polygons[i], function(o){ return o.X; })))<xmin){
+			xmin = Math.min.apply(this,$.map(polygons[i], function(o){ return o.X; }))
+		}
+		if((Math.max.apply(this,$.map(polygons[i], function(o){ return o.X; })))>xmax){
+			xmax = Math.max.apply(this,$.map(polygons[i], function(o){ return o.X; }))
+		}
+		if((Math.min.apply(this,$.map(polygons[i], function(o){ return o.Y; })))<ymin){
+			ymin = Math.min.apply(this,$.map(polygons[i], function(o){ return o.Y; }))
+		}
+		if((Math.max.apply(this,$.map(polygons[i], function(o){ return o.Y; })))>ymax){
+			ymax = Math.max.apply(this,$.map(polygons[i], function(o){ return o.Y; }))
+		}
+
+	}
+
+	for(i=0;i<insidePolygons.length;i++){
+		dims2.push({
+			xmin:	Math.min.apply(this,$.map(insidePolygons[i], function(o){ return o.X; })),
+			xmax:	Math.max.apply(this,$.map(insidePolygons[i], function(o){ return o.X; })),
+			ymin:	Math.min.apply(this,$.map(insidePolygons[i], function(o){ return o.Y; })),
+			ymax: Math.max.apply(this,$.map(insidePolygons[i], function(o){ return o.Y; }))
+		})
+
+	}
+
+	//console.log(xmin)
+
 
 }
 
@@ -546,6 +617,7 @@ function undo(){
 }
 
 function clearAll(){
+	//dims=false
 	differnece = []
 	union = []
 	insidePolygons=[]
@@ -561,12 +633,13 @@ function clearAll(){
 	dogbones=[]
 	cutout=[]
 	point=[0,0]
-	zoom=2
 	panX=0
 	panY=0
-	draw()
+	//makePath()
+	minMax()
 	defineStock(stock)
 	$('#clear').blur()
+	draw()
 }
 
 function scalePts(pts,cmd){
@@ -698,9 +771,19 @@ function zoomExtents(s){
 
 function defineStock(pts){
 	stock=[]	
+	
+	zoom = ($(window).height()-150) / (pts[1]*grid*gridSpace)
+	
+	sf=zoom
+
+	//console.log(zoom)
+
 	panX=0-((pts[0]/2)*grid*gridSpace*sf)
 	panY=(pts[1]/2)*grid*gridSpace*sf
 	stock.push(parseFloat(pts[0]*grid),parseFloat(pts[1]*grid))
+
+	//zoom=3
+
 	draw()
 }
 
@@ -883,6 +966,10 @@ function makePath(){
 		makeFillets(insidePolygons, false)
 	}
 
+
+	if(dims==true){
+		minMax()
+	}
 
 }
 
@@ -1421,8 +1508,8 @@ function cutOut(out){
 	}
 	else if(e.keyCode == 90){
 		//console.log("zoom extents")
-		panX=0
-		panY=0
+		//panX=0
+		//panY=0
 	}
 	
 	draw()
