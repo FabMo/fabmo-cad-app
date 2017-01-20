@@ -3,7 +3,7 @@
 ##Overview
 FabMo CAD is a web app for drawing simple shapes in a browser and creating toolpaths for ShopBot tools and other 3 axis CNC routers that run standard Gcode.   
 [LIVE DEMO](http://gofabmo.org/fabmo-cad-app)   
-[FabMo App Download](releases/download/v0.1.4/CAD_v0.1.4.fma)
+[FabMo App Download](https://github.com/FabMo/fabmo-cad-app/releases/download/v0.1.4/CAD_v0.1.4.fma)
 
 ##Examples
 
