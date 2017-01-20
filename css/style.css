@@ -31,6 +31,7 @@ body{
 	left:5px;
 	top:80px;
 	height: calc(100% - 150px);
+	width:250px;
 	border-radius:8px;
 	font-size:18px;
 	font-family:mono;

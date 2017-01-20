@@ -19,7 +19,7 @@ function draw(){
 
 	//grid
 
-	ctx.lineWidth = 0.1*sf
+	ctx.lineWidth = 0.15
 	
 	for(x=0;x<(ctx.canvas.width/2)-(panX+mousePanX);x+=gridSpace*sf){
 		ctx.moveTo(ctx.canvas.width/2+x,-(panY+mousePanY))
@@ -52,7 +52,7 @@ function draw(){
 		ctx.fill()
 
 		//1" lines
-		ctx.lineWidth = sf/9
+		ctx.lineWidth = 0.2
 
 		ctx.beginPath()
 		for(i=1;i<=stock[0]/grid;i++){
@@ -67,7 +67,7 @@ function draw(){
 		ctx.stroke()
 
 		//axis lines
-		ctx.lineWidth = sf/5
+		ctx.lineWidth = 0.6
 		ctx.strokeStyle='#aa0000'
 
 		ctx.beginPath()
@@ -121,7 +121,7 @@ function draw(){
 	//0,0
 	ctx.beginPath()
 	ctx.fillStyle = '#333'
-	ctx.arc(0,0,sf,0,Math.PI*2)
+	ctx.arc(0,0,2,0,Math.PI*2)
 	ctx.fill()
 
 
