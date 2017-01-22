@@ -54,7 +54,7 @@ makedxf (download dxf)
 ###Macros
 
 The 'macro' command will show/hide the macro text area.  
-Copy and paste the commands below into the macro text area and then press the 'run' button.
+Copy and paste the commands below into the macro text area and then click the 'run' button.
 
 ```
 circle2,2,1.5
@@ -76,7 +76,7 @@ plunge rate: 0.2 inch/sec
 
 ##Dimensions
 
-The 'dim' command will show/hide dimensions of the drawing.
+The 'dim' command will show/hide drawing dimensions.
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad4.png)  
 

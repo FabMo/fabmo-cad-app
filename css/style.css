@@ -1,9 +1,7 @@
 body{
-
 	background:#eee;
 	overflow:hidden;
 }
-
 
 #cad-canvas{
 	position:absolute;

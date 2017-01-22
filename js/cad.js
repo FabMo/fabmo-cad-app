@@ -1,5 +1,7 @@
 //TODO
 //
+//snap endpoints
+//command history
 //polyline (close:true/false)
 //line join update
 //fillet curves
@@ -67,6 +69,7 @@ var lines = []
 
 var polygons = []
 var insidePolygons = []
+var close=true
 
 var pockets = []
 var cutout = []
@@ -282,6 +285,9 @@ function runCmd(cmd){
 		cmd = 'feedrate = ' + feedrate +" in/sec"
 	}
 	else if(cmd.substring(0,5)=="grid="){
+		clearAll()
+		//
+
 		stock[0]=stock[0]/grid
 		stock[1]=stock[1]/grid
 		grid=1/(parseFloat(cmd.substring(5)))
@@ -478,40 +484,73 @@ function minMax(){
 	
 	for(i=0;i<polygons.length;i++){
 
+		x = Math.min.apply(this,$.map(polygons[i], function(o){ return o.X; }))
+		X = Math.max.apply(this,$.map(polygons[i], function(o){ return o.X; }))
+		y = Math.min.apply(this,$.map(polygons[i], function(o){ return o.Y; }))
+		Y = Math.max.apply(this,$.map(polygons[i], function(o){ return o.Y; }))
+
+		if(x<xmin){
+			xmin = x
+		}
+		if(X>xmax){
+			xmax = X
+		}
+		if(y<ymin){
+			ymin = y
+		}
+		if(Y>ymax){
+			ymax = Y
+		}
+	}
+
+	for(i=0;i<polygons.length;i++){
+		x = Math.min.apply(this,$.map(polygons[i], function(o){ return o.X; }))
+		X = Math.max.apply(this,$.map(polygons[i], function(o){ return o.X; }))
+		y = Math.min.apply(this,$.map(polygons[i], function(o){ return o.Y; }))
+		Y = Math.max.apply(this,$.map(polygons[i], function(o){ return o.Y; }))
+
+		dx=true
+		dy=true
+
+		if((xmax.toFixed(3)==X.toFixed(3))&&(xmin.toFixed(3)==x.toFixed(3))){
+			dx=false
+		}
+		if((ymax.toFixed(3)==Y.toFixed(3))&&(ymin.toFixed(3)==y.toFixed(3))){
+			dy=false
+		}
+
+
 		dims2.push({
-			xmin:	Math.min.apply(this,$.map(polygons[i], function(o){ return o.X; })),
-			xmax:	Math.max.apply(this,$.map(polygons[i], function(o){ return o.X; })),
-			ymin:	Math.min.apply(this,$.map(polygons[i], function(o){ return o.Y; })),
-			ymax: Math.max.apply(this,$.map(polygons[i], function(o){ return o.Y; }))
+			xmin:	x,
+			xmax: X,
+			ymin: y,
+			ymax: Y,
+			x:dx,
+			y:dy
 		})
-
-		if((Math.min.apply(this,$.map(polygons[i], function(o){ return o.X; })))<xmin){
-			xmin = Math.min.apply(this,$.map(polygons[i], function(o){ return o.X; }))
-		}
-		if((Math.max.apply(this,$.map(polygons[i], function(o){ return o.X; })))>xmax){
-			xmax = Math.max.apply(this,$.map(polygons[i], function(o){ return o.X; }))
-		}
-		if((Math.min.apply(this,$.map(polygons[i], function(o){ return o.Y; })))<ymin){
-			ymin = Math.min.apply(this,$.map(polygons[i], function(o){ return o.Y; }))
-		}
-		if((Math.max.apply(this,$.map(polygons[i], function(o){ return o.Y; })))>ymax){
-			ymax = Math.max.apply(this,$.map(polygons[i], function(o){ return o.Y; }))
-		}
-
 	}
 
 	for(i=0;i<insidePolygons.length;i++){
+
+		x = Math.min.apply(this,$.map(insidePolygons[i], function(o){ return o.X; }))
+		X = Math.max.apply(this,$.map(insidePolygons[i], function(o){ return o.X; }))
+		y = Math.min.apply(this,$.map(insidePolygons[i], function(o){ return o.Y; }))
+		Y = Math.max.apply(this,$.map(insidePolygons[i], function(o){ return o.Y; }))
+		
 		dims2.push({
-			xmin:	Math.min.apply(this,$.map(insidePolygons[i], function(o){ return o.X; })),
-			xmax:	Math.max.apply(this,$.map(insidePolygons[i], function(o){ return o.X; })),
-			ymin:	Math.min.apply(this,$.map(insidePolygons[i], function(o){ return o.Y; })),
-			ymax: Math.max.apply(this,$.map(insidePolygons[i], function(o){ return o.Y; }))
+			xmin:	x,
+			xmax:	X,
+			ymin:	y,
+			ymax: Y,
+			x:true,
+			y:true
 		})
+
 
 	}
 
-	//console.log(xmin)
-
+	//console.log(xmin + " " + xmax)
+	console.log(dims2)
 
 }
 
@@ -1055,7 +1094,7 @@ function makeFillets(pg,pgOut){
 			Cx=parseFloat(filletIn[i].X)
 			Cy=parseFloat(filletIn[i].Y)
 			r=parseFloat(tool/2*grid)
-			v=Math.ceil(r*2*Math.PI*30)
+			v=Math.ceil(r*2*Math.PI*100)
 			temp.push([])
 			for(j=0;j<=v;j++){
 				temp[temp.length-1].push({X:(Cx)+Math.sin((Math.PI*2)/v*j)*r,Y:(Cy)+Math.cos((Math.PI*2)/v*j)*r })
@@ -1091,7 +1130,7 @@ function makeFillets(pg,pgOut){
 			Cx=parseFloat(filletOut[i].X)
 			Cy=parseFloat(filletOut[i].Y)
 			r=parseFloat(tool/2*grid)
-			v=Math.ceil(r*2*Math.PI*30)
+			v=Math.ceil(r*2*Math.PI*100)
 			temp.push([])
 			for(j=0;j<=v;j++){
 				temp[temp.length-1].push({X:(Cx)+Math.sin((Math.PI*2)/v*j)*r,Y:(Cy)+Math.cos((Math.PI*2)/v*j)*r })
@@ -1109,7 +1148,7 @@ function makeFillets(pg,pgOut){
 		cpr.Execute(ClipperLib.ClipType.ctDifference, solution_paths, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero)
 		clip=solution_paths
 
-		clip = ClipperLib.JS.Clean(clip, 0.015*scale)
+		clip = ClipperLib.JS.Clean(clip, 0.0025*grid*scale)
 
 		ClipperLib.JS.ScaleDownPaths(clip, scale)
 		ClipperLib.JS.ScaleDownPaths(filletOut, scale)

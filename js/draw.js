@@ -13,13 +13,10 @@ function draw(){
 	sf = zoom
 	ctx.translate(panX+mousePanX,panY+mousePanY)
 
-	//origin
-	ctx.lineWidth = 1
-	ctx.strokeStyle = '#999'
-
 	//grid
 
 	ctx.lineWidth = 0.15
+	ctx.strokeStyle = '#999'
 	
 	for(x=0;x<(ctx.canvas.width/2)-(panX+mousePanX);x+=gridSpace*sf){
 		ctx.moveTo(ctx.canvas.width/2+x,-(panY+mousePanY))
@@ -136,22 +133,22 @@ function draw(){
 		ctx.fill()
 		*/
 
-		makeDim(xmin*gridSpace*sf,(0-(ymin*gridSpace*sf)),(xmax-xmin)*gridSpace*sf,(0-((ymax-ymin)*gridSpace*sf)),gridSpace*sf)
+		makeDim(xmin*gridSpace*sf,(0-(ymin*gridSpace*sf)),(xmax-xmin)*gridSpace*sf,(0-((ymax-ymin)*gridSpace*sf)),gridSpace*sf,true,true)
 
 		
 		//each part
-		if(dims2.length>1){
+		
 		//ctx.fillStyle='rgba(255,0,0,0.05)'
 			for(i=0;i<dims2.length;i++){
 				/*
-				ctx.beginPath()
-				ctx.rect(dims2[i].xmin*gridSpace*sf,(0-(dims2[i].ymin*gridSpace*sf)),(dims2[i].xmax-dims2[i].xmin)*gridSpace*sf,(0-((dims2[i].ymax-dims2[i].ymin)*gridSpace*sf)))
-				ctx.fill()
-				*/
+			ctx.beginPath()
+			ctx.rect(dims2[i].xmin*gridSpace*sf,(0-(dims2[i].ymin*gridSpace*sf)),(dims2[i].xmax-dims2[i].xmin)*gridSpace*sf,(0-((dims2[i].ymax-dims2[i].ymin)*gridSpace*sf)))
+			ctx.fill()
+			*/
 
-				makeDim(dims2[i].xmin*gridSpace*sf,(0-(dims2[i].ymin*gridSpace*sf)),(dims2[i].xmax-dims2[i].xmin)*gridSpace*sf,(0-((dims2[i].ymax-dims2[i].ymin)*gridSpace*sf)),gridSpace*sf/2)
-			}
+			makeDim(dims2[i].xmin*gridSpace*sf,(0-(dims2[i].ymin*gridSpace*sf)),(dims2[i].xmax-dims2[i].xmin)*gridSpace*sf,(0-((dims2[i].ymax-dims2[i].ymin)*gridSpace*sf)),gridSpace*sf/2,dims2[i].x,dims2[i].y)
 		}
+
 	}
 
 	//dogbones
@@ -182,8 +179,8 @@ function draw(){
 
 	//lines
 	//ctx.setLineDash([2*sf, 3*sf])
-	ctx.lineWidth=0.7*sf
-	ctx.strokeStyle='#fff'
+	ctx.lineWidth=2
+	ctx.strokeStyle='#aaa'
 	for(i=0;i<lines.length;i++){
 		ctx.beginPath()
 		ctx.moveTo(lines[i][0]*gridSpace*sf,0-lines[i][1]*gridSpace*sf)
@@ -197,7 +194,7 @@ function draw(){
 	//ctx.setLineDash([0, 0])
 
 	//polygons
-	ctx.lineWidth=0.7*sf
+	ctx.lineWidth=2
 	ctx.strokeStyle='#ee00ee'
 	for(i=0;i<polygons.length;i++){
 
@@ -213,7 +210,7 @@ function draw(){
 
 	//Inside
 
-	ctx.lineWidth=0.7*sf
+	ctx.lineWidth=2
 	ctx.strokeStyle='#800080'
 	for(i=0;i<insidePolygons.length;i++){
 
@@ -235,7 +232,7 @@ function draw(){
 	}
 
 	//start end point
-	ctx.lineWidth=0.4*sf
+	ctx.lineWidth=1
 	ctx.strokeStyle='#333'
 	if(lines.length==0){
 
@@ -249,7 +246,7 @@ function draw(){
 
 	if(lines.length>0){
 		ctx.beginPath()
-		ctx.arc(point[0]*sf*gridSpace,0-point[1]*sf*gridSpace,3*sf,0,Math.PI*2)
+		ctx.arc(point[0]*sf*gridSpace,0-point[1]*sf*gridSpace,8,0,Math.PI*2)
 		ctx.fill()
 		ctx.stroke()
 	}
@@ -258,7 +255,7 @@ function draw(){
 	//pockets
 
 	if(pockets.length>0){
-		ctx.lineWidth=0.4*sf
+		ctx.lineWidth=1
 		ctx.strokeStyle='#0000ff'
 		for(i=0;i<pockets.length;i++){
 			for(j=0;j<pockets[i].length;j++){
@@ -275,7 +272,7 @@ function draw(){
 	//cutout
 
 	if(cutout.length>0){
-		ctx.lineWidth=0.4*sf
+		ctx.lineWidth=1
 		ctx.strokeStyle='#0000ff'
 		for(i=0;i<cutout.length;i++){
 			ctx.beginPath()
@@ -287,24 +284,22 @@ function draw(){
 		}
 	}
 
-
-
 	//cursor
 	ctx.lineWidth = 1
 	ctx.fillStyle='#fff'
 	ctx.beginPath()
 
-	ctx.strokeStyle='#333'
-	ctx.moveTo(mouseX,mouseY-(gridSpace/4*sf))
-	ctx.lineTo(mouseX,mouseY+(gridSpace/4*sf))
-	ctx.moveTo(mouseX-(gridSpace/4*sf),mouseY)
-	ctx.lineTo(mouseX+(gridSpace/4*sf),mouseY)
+	ctx.strokeStyle='#555'
+	ctx.moveTo(mouseX,mouseY-(20))
+	ctx.lineTo(mouseX,mouseY+(20))
+	ctx.moveTo(mouseX-(20),mouseY)
+	ctx.lineTo(mouseX+(20),mouseY)
 	ctx.stroke()
 
 	ctx.beginPath()
 	ctx.strokeStyle='#333'
 	ctx.moveTo(mouseX,mouseY)
-	ctx.arc(mouseX,mouseY,1*sf,0,Math.PI*2)
+	ctx.arc(mouseX,mouseY,3,0,Math.PI*2)
 	
 	if(lines.length>0){
 		if(lines[lines.length-1].length==2){
@@ -348,22 +343,18 @@ function draw(){
 
 
 
-function makeDim(x1,y1,x2,y2,space){
+function makeDim(x1,y1,x2,y2,space,dx,dy){
+
 
 	ctx.strokeStyle = '#bb0000'
 	ctx.fillStyle = "#bb0000"
-
+	ctx.font = "11px Arial"
 	ctx.beginPath()
-	ctx.moveTo(x1+x2+space-4,y1)
-	ctx.lineTo(x1+x2+space+4,y1)
-
-	ctx.moveTo(x1+x2+space,y1)
-	ctx.lineTo(x1+x2+space,y1+y2)
-
-	ctx.moveTo(x1+x2+space-4,y1+y2)
-	ctx.lineTo(x1+x2+space+4,y1+y2)
 
 	//
+
+
+	if(dx==true){
 
 	ctx.moveTo(x1,y1+y2-space-4)
 	ctx.lineTo(x1,y1+y2-space+4)
@@ -374,21 +365,36 @@ function makeDim(x1,y1,x2,y2,space){
 	ctx.moveTo(x1+x2,y1+y2-space-4)
 	ctx.lineTo(x1+x2,y1+y2-space+4)
 
-	//
-	ctx.stroke()
-
 	x = (Math.abs(x2/gridSpace/sf/grid)).toFixed(3)+"\""
-	y = (Math.abs(y2/gridSpace/sf/grid)).toFixed(3)+"\""
 
-	ctx.font = "11px Arial";
 	ctx.fillText(x,(x1+x2/2)-(ctx.measureText(x).width/2),(y1+y2)-space-2)
 
-	ctx.rotate(Math.PI/2)
+	}
 
+
+	if(dy==true){
+
+	ctx.moveTo(x1+x2+space-4,y1)
+	ctx.lineTo(x1+x2+space+4,y1)
+
+	ctx.moveTo(x1+x2+space,y1)
+	ctx.lineTo(x1+x2+space,y1+y2)
+
+	ctx.moveTo(x1+x2+space-4,y1+y2)
+	ctx.lineTo(x1+x2+space+4,y1+y2)
+
+	y = (Math.abs(y2/gridSpace/sf/grid)).toFixed(3)+"\""
+
+	ctx.rotate(Math.PI/2)
 	ctx.fillText(y,(y1+y2/2)-(ctx.measureText(y).width/2),0-((x1+x2)+space+2))
-	//ctx.fillText(y,(x1+x2)+space,(y1+y2/2))
-	
 	ctx.rotate(-Math.PI/2)
+
+	}
+
+	ctx.stroke()
+
+	
+
 
 
 }
