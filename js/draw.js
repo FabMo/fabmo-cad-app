@@ -52,13 +52,26 @@ function draw(){
 		ctx.lineWidth = 0.2
 
 		ctx.beginPath()
-		for(i=1;i<=stock[0]/grid;i++){
-			ctx.moveTo(i*gridSpace*sf*grid,0)
-			ctx.lineTo(i*gridSpace*sf*grid,0-(stock[1]*gridSpace*sf))		
+
+		if(unit=="inch"){
+			for(i=1;i<=stock[0]/grid;i++){
+				ctx.moveTo(i*gridSpace*sf*grid,0)
+				ctx.lineTo(i*gridSpace*sf*grid,0-(stock[1]*gridSpace*sf))		
+			}
+			for(i=1;i<=stock[1]/grid;i++){
+				ctx.moveTo(0,0-(i*gridSpace*sf*grid))
+				ctx.lineTo(stock[0]*gridSpace*sf,0-(i*gridSpace*sf*grid))		
+			}
 		}
-		for(i=1;i<=stock[1]/grid;i++){
-			ctx.moveTo(0,0-(i*gridSpace*sf*grid))
-			ctx.lineTo(stock[0]*gridSpace*sf,0-(i*gridSpace*sf*grid))		
+		else if(unit=="mm"){
+			for(i=0.3937;i<=stock[0]/grid;i+=0.3937){
+				ctx.moveTo(i*gridSpace*sf*grid,0)
+				ctx.lineTo(i*gridSpace*sf*grid,0-(stock[1]*gridSpace*sf))		
+			}
+			for(i=0.3937;i<=stock[1]/grid;i+=0.3937){
+				ctx.moveTo(0,0-(i*gridSpace*sf*grid))
+				ctx.lineTo(stock[0]*gridSpace*sf,0-(i*gridSpace*sf*grid))		
+			}
 		}
 
 		ctx.stroke()
@@ -82,8 +95,14 @@ function draw(){
 
 		ctx.lineWidth = 0.5
 
-		stockX = ((stock[0])/grid).toFixed(2)+"\""
-		stockY = ((stock[1])/grid).toFixed(2)+"\""
+		if(unit=="inch"){
+			stockX = ((stock[0])/grid).toFixed(2)+"\""
+			stockY = ((stock[1])/grid).toFixed(2)+"\""
+		}
+		else if(unit=="mm"){
+			stockX = ((stock[0])/grid*25.4).toFixed(0)+" mm"
+			stockY = ((stock[1])/grid*25.4).toFixed(0)+" mm"
+		}
 
 		ctx.beginPath()
 		ctx.strokeStyle = '#333'
@@ -133,7 +152,7 @@ function draw(){
 		ctx.fill()
 		*/
 
-		makeDim(xmin*gridSpace*sf,(0-(ymin*gridSpace*sf)),(xmax-xmin)*gridSpace*sf,(0-((ymax-ymin)*gridSpace*sf)),gridSpace*sf,true,true)
+		makeDim(xmin*gridSpace*sf,(0-(ymin*gridSpace*sf)),(xmax-xmin)*gridSpace*sf,(0-((ymax-ymin)*gridSpace*sf)),30,true,true)
 
 		
 		//each part
@@ -146,7 +165,7 @@ function draw(){
 			ctx.fill()
 			*/
 
-			makeDim(dims2[i].xmin*gridSpace*sf,(0-(dims2[i].ymin*gridSpace*sf)),(dims2[i].xmax-dims2[i].xmin)*gridSpace*sf,(0-((dims2[i].ymax-dims2[i].ymin)*gridSpace*sf)),gridSpace*sf/2,dims2[i].x,dims2[i].y)
+			makeDim(dims2[i].xmin*gridSpace*sf,(0-(dims2[i].ymin*gridSpace*sf)),(dims2[i].xmax-dims2[i].xmin)*gridSpace*sf,(0-((dims2[i].ymax-dims2[i].ymin)*gridSpace*sf)),15,dims2[i].x,dims2[i].y)
 		}
 
 	}
@@ -365,7 +384,12 @@ function makeDim(x1,y1,x2,y2,space,dx,dy){
 	ctx.moveTo(x1+x2,y1+y2-space-4)
 	ctx.lineTo(x1+x2,y1+y2-space+4)
 
-	x = (Math.abs(x2/gridSpace/sf/grid)).toFixed(3)+"\""
+	if(unit=='inch'){
+		x = (Math.abs(x2/gridSpace/sf/grid)).toFixed(3)+"\""
+	}
+	else if(unit=='mm'){
+		x = (Math.abs(x2/gridSpace/sf/grid*25.4)).toFixed(2)
+	}
 
 	ctx.fillText(x,(x1+x2/2)-(ctx.measureText(x).width/2),(y1+y2)-space-2)
 
@@ -383,7 +407,13 @@ function makeDim(x1,y1,x2,y2,space,dx,dy){
 	ctx.moveTo(x1+x2+space-4,y1+y2)
 	ctx.lineTo(x1+x2+space+4,y1+y2)
 
-	y = (Math.abs(y2/gridSpace/sf/grid)).toFixed(3)+"\""
+	if(unit=='inch'){
+		y = (Math.abs(y2/gridSpace/sf/grid)).toFixed(3)+"\""
+	}
+	else if(unit=='mm'){
+		y = (Math.abs(y2/gridSpace/sf/grid*25.4)).toFixed(2)	
+	}
+
 
 	ctx.rotate(Math.PI/2)
 	ctx.fillText(y,(y1+y2/2)-(ctx.measureText(y).width/2),0-((x1+x2)+space+2))

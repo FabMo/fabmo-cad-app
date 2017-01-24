@@ -1,5 +1,7 @@
 //TODO
 //
+//mm
+//drill pts
 //snap endpoints
 //command history
 //polyline (close:true/false)
@@ -10,8 +12,9 @@ var gridSpace = 20
 var gridIncrement = 10
 var grid = 4 //1/4"
 var stock = []
+var stock2 = []
 var tool = 0.125
-var units
+var unit
 var scale = 1000   //
 var layer = 0
 var output = 'gcode'  //sbp gcode dxf
@@ -20,6 +23,10 @@ var feedrate = 0.5
 var plungerate = 0.2
 var passDepth = -1
 var name = 'cad'
+unit = 'inch'
+
+var cmdHistory = []
+var historyIndex = -1
 
 var dims=false
 var xmin = 10000
@@ -114,7 +121,7 @@ star\'x\',\'y\',\'r\'<br>\n\
 stock=\'x\',\'y\'<br>\n\
 tool=\'diameter\'<br>\n\
 touch hold (pan)<br>\n\
-units=inch<br>\n\
+unit=\'inch\',\'mm\'<br>\n\
 "
 
 function runCmd(cmd){
@@ -191,11 +198,7 @@ function runCmd(cmd){
 		scalePts(pts)
 		star(pts)	
 	}
-	//toolpath & settings
-	else if(cmd.substring(0,4)=="calc"){
-		cmd = eval(cmd.substring(4))
-		console.log(cmd)
-	}
+	//toolpath
 	else if(cmd=="cutin"){
 		console.log('cutin')
 		cutOut(false)
@@ -264,7 +267,11 @@ function runCmd(cmd){
 		cmd=cmd.substring(4,cmd.length)
 		fabmo.runSBP(cmd)
 	}
-	//settings
+	//settings & tools
+	else if(cmd.substring(0,4)=="calc"){
+		cmd = eval(cmd.substring(4))
+		console.log(cmd)
+	}
 	else if(cmd.substring(0,9)=="cutdepth="){
 		cutDepth=parseFloat(cmd.substring(9))
 		cmd = 'cutdepth = ' + cutDepth +"\""
@@ -287,16 +294,24 @@ function runCmd(cmd){
 	else if(cmd.substring(0,5)=="grid="){
 		clearAll()
 		//
+		
 
 		stock[0]=stock[0]/grid
 		stock[1]=stock[1]/grid
-		grid=1/(parseFloat(cmd.substring(5)))
+		if(unit=='inch'){
+			grid=1/(parseFloat(cmd.substring(5)))
+		}
+		else if(unit=='mm'){
+			grid=1/(parseFloat(cmd.substring(5))/25.4)
+		}
 		
 		//zoom=1
-
-		document.getElementById('grid').innerHTML = 'grid: ' + (parseFloat(cmd.substring(5))) + "\""
-		cmd = 'grid = ' + (parseFloat(cmd.substring(5))) +"\""			
+		//document.getElementById('grid').innerHTML = 'grid: ' + (parseFloat(cmd.substring(5))) + "\""
+		cmd = 'grid = ' + (parseFloat(cmd.substring(5)))			
 		defineStock(stock)
+
+		window.setTimeout("redraw()",50)
+
 	}
 	else if(cmd=="macro"){
 
@@ -349,7 +364,11 @@ function runCmd(cmd){
 	}
 	else if(cmd.substring(0,6)=="stock="){
 		cmd = rmComma(cmd,6)
-		pts = cmd.substring(6).split(',')			
+		pts = cmd.substring(6).split(',')
+		if(unit=='mm'){
+			pts[0]=pts[0]/25.4
+			pts[1]=pts[1]/25.4
+		}			
 		defineStock(pts)
 		cmd+="\""
 	}
@@ -357,19 +376,39 @@ function runCmd(cmd){
 		tool=parseFloat(cmd.substring(5))
 		cmd = 'tool diameter = ' + tool +"\""
 	}
-	else if((cmd=="units") && (cmd.length==5)){
-		cmd=units
+	else if((cmd=="unit") && (cmd.length==5)){
+		cmd=unit
 	}
-	else if(cmd.substring(0,6)=="units="){
-		cmd=cmd.substring(6,cmd.length)
-		if((cmd =='cm') || (cmd =='CM')){
-			units = 'cm'
-			cmd='units=cm'
+	else if(cmd.substring(0,5)=="unit="){
+		cmd=cmd.substring(5,cmd.length)
+		if(cmd =='mm'){
+
+			grid=(1/0.19685)
+			stock=[3.937,3.937]
+			defineStock(stock)
+
+
+			clearAll(true)
+			//redraw()
+	
+			unit = 'mm'			
 		}
 		else if((cmd =='inch')||(cmd=="\"")){
-			units = 'inch'
-			cmd='units=inch'
+			
+			cmd='inch'
+
+			grid=4
+			defineStock([4,4])
+
+			clearAll(true)
+
+			unit = 'inch'
 		}
+
+
+		//console.log
+
+
 	}
 	else if((cmd=="?")||(cmd=="help")){
 		d = new Date()
@@ -388,7 +427,7 @@ function runCmd(cmd){
 		var settings="\
 		stock = " + (stock[0]/grid) + "," + (stock[1]/grid) +" <br>\n\
 		tool diameter = " + tool + " <br>\n\
-		units = " + units +" <br>\n\
+		unit = " + unit +" <br>\n\
 		"
 		settings = settings.replace(/\t/g,'')
 		console.log(settings)
@@ -407,7 +446,7 @@ function runCmd(cmd){
 			
 	}
 	else if(cmd=="clear"){
-		clearAll()
+		clearAll(true)
 		window.setTimeout("console.clear()",50)
 	}
 	else if(cmd=="makedxf"){
@@ -434,10 +473,33 @@ function runCmd(cmd){
 		cmd = "FabMo CAD \(\'?\' for help\)"
 	}
 
-
 	return cmd
 
 }
+
+function redraw(){
+
+	toolpath=""
+
+	for(c=0;c<cmdHistory.length;c++){
+		if((cmdHistory[c]!='cutout')&&(cmdHistory[c]!='cutin')&&(cmdHistory[c]!='pocket')){
+			if((cmdHistory[c].substring(0,4)!="grid")&&(cmdHistory[c]!="dim")&&(cmdHistory[c].substring(0,4)!='unit')){
+				runCmd(cmdHistory[c])
+			}
+		}
+		else{
+			toolpath = cmdHistory[c]
+		}
+		
+	}
+
+	makePath()
+	draw()
+
+	//window.setTimeout("runCmd(toolpath);makePath();draw()",5)
+
+}
+
 
 function runMacro(){
 
@@ -454,6 +516,7 @@ function runMacro(){
 				fillet=false
 			}
 			runCmd(macro[m])
+			
 		}
 		else{
 			toolpath = macro[m]
@@ -550,7 +613,7 @@ function minMax(){
 	}
 
 	//console.log(xmin + " " + xmax)
-	console.log(dims2)
+	//console.log(dims2)
 
 }
 
@@ -579,13 +642,20 @@ function undo(){
 		lines.pop()
 		point=[0,0]
 	}
-	console.log(lines)
+	cmdHistory.push("undo")
+	historyIndex=cmdHistory.length
+	//console.log(lines)
 	makePath()
 	draw()
 }
 
-function clearAll(){
-	//dims=false
+function clearAll(h){
+	if(h==true){
+		historyIndex=0
+		cmdHistory=[]
+		dims=false
+	}
+	
 	differnece = []
 	union = []
 	insidePolygons=[]
@@ -593,7 +663,6 @@ function clearAll(){
 	filletIn=[]
 	filletOut=[]
 	bones=[]
-	stock=[4,4]
 	lines=[]
 	pockets=[]
 	polygons=[]
@@ -605,14 +674,23 @@ function clearAll(){
 	panY=0
 	//makePath()
 	minMax()
-	defineStock(stock)
+
+	//stock=[4,4]
+	defineStock(stock2)
 	$('#clear').blur()
 	draw()
 }
 
 function scalePts(pts,cmd){
 	for(i=0;i<pts.length;i++){
-		pts[i]=pts[i]*grid
+		if(unit=="inch"){
+			pts[i]=pts[i]*grid
+		}
+		else if(unit=="mm"){
+			//
+			pts[i]=pts[i]*grid/25.4
+		}
+
 	}
 }
 
@@ -728,7 +806,7 @@ function star(pts){
 		}
 	}
 	point=[Cx,Cy]
-	console.log(lines)
+	//console.log(lines)
 }
 
 function zoomExtents(s){
@@ -738,6 +816,8 @@ function zoomExtents(s){
 
 function defineStock(pts){
 	stock=[]	
+
+	stock2=pts
 	
 	zoom = ($(window).height()-150) / (pts[1]*grid*gridSpace)
 	
@@ -1306,7 +1386,7 @@ function makeDogbones(pts,pgOut){
 	
 	Cx=parseFloat(pts[i].X)
 	Cy=parseFloat(pts[i].Y)
-	r=parseFloat(tool/2*grid)
+	r=parseFloat((tool/2*grid).toFixed(3))
 
 	v=Math.ceil(r*2*Math.PI*30)
 
@@ -1355,12 +1435,14 @@ function pocket(){
 	var co = new ClipperLib.ClipperOffset(0.25, 0.25)
 	co.AddPaths(pockets, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon)
 
+	t = Math.floor((tool/2*grid) * scale)
+
 	pockets=[]
 	o=1
 	while(o>0){
 		offset = new ClipperLib.Paths()
 
-		co.Execute(offset,-(tool/2*grid*o) * scale)
+		co.Execute(offset,-(t*o))
 
 		if(offset.length!=0){
 			o++
@@ -1440,11 +1522,14 @@ function cutOut(out){
 	var co = new ClipperLib.ClipperOffset(0.25, 0.25)
 	co.AddPaths(cutout, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon)
 	cutout = new ClipperLib.Paths()
+
+	t = Math.floor((tool/2*grid) * scale)
+
 	if(out==true){
-		co.Execute(cutout,(tool/2*grid) * scale)
+		co.Execute(cutout,(t))
 	}
 	else if(out==false){
-		co.Execute(cutout,-(tool/2*grid) * scale)
+		co.Execute(cutout,-(t))
 	}
 
 	ClipperLib.JS.ScaleDownPaths(cutout, scale)
