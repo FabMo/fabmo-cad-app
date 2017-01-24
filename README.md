@@ -73,12 +73,22 @@ cut depth: 0.05"
 fillet radius: tool radius  
 feedrate: 0.5 inch/sec  
 plunge rate: 0.2 inch/sec  
+unit: inch  
+stock: 4" x 4"
+grid: 0.25"
 
 ##Dimensions
 
 The 'dim' command will show/hide drawing dimensions.
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad4.png)  
+
+##Units
+
+The default units are inches and degrees. The length unit can be changed to millimeter by typing the command 'unit=mm' + enter.  The grid space can be set with the command 'grid=2' to change the space to 2mm.  
+
+![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad5.png)  
+
 
 [shopbottools.com](http://shopbottools.com)
 
