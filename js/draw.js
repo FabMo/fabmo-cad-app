@@ -210,6 +210,17 @@ function draw(){
 		}
 		ctx.stroke()
 	}
+
+
+	//drill
+	for(i=0;i<lines.length;i++){
+		ctx.beginPath()
+		if((lines[i].length==4)&&(lines[i][0]==lines[i][2])&&(lines[i][1]==lines[i][3])){
+			ctx.arc(lines[i][0]*gridSpace*sf,0-lines[i][1]*gridSpace*sf,tool/2*grid*gridSpace*sf,0,Math.PI*2)
+		}
+		ctx.fill()
+	}
+
 	//ctx.setLineDash([0, 0])
 
 	//polygons

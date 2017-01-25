@@ -11,11 +11,13 @@ FabMo CAD is a web app for drawing simple shapes in a browser and creating toolp
 
 ###Drawing with Commands
 
+Type the commands below in the text area followed by 'enter':
+
 ```
-rect0,0,1 + 'enter' (draw 1" square at 0,0)
-dogbone + 'enter' (create dogbone fillets)
-pocket + 'enter' (create pocket toolpath)
-makeg + 'enter' (download gcode or 'makesbp' to download the ShopBot program file)
+rect0,0,1 (draw a 1" square at 0,0)
+dogbone (create dogbone fillets)
+pocket (create pocket toolpath)
+makeg (download gcode or 'makesbp' to download the ShopBot program file)
 ```
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad1.png)
@@ -85,7 +87,7 @@ The 'dim' command will show/hide drawing dimensions.
 
 ##Units
 
-The default units are inches and degrees. The length unit can be changed to millimeter by typing the command 'unit=mm' + enter.  The grid space can be set with the command 'grid=2' to change the space to 2mm.  
+The default units are inches and degrees. The length unit can be changed to millimeter by entering the command 'unit=mm'.  The grid space can be set with the command 'grid=2' to change the space to 2mm.  
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad5.png)  
 

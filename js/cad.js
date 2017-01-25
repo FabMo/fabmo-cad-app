@@ -80,6 +80,7 @@ var close=true
 
 var pockets = []
 var cutout = []
+var drill = []
 
 var toolpath
 
@@ -95,6 +96,7 @@ cutout (offset toolpath out)<br>\n\
 dim (toggle dimensions)<br>\n\
 dogbone (make dog-bone fillets)<br>\n\
 dogbone= \'1\',\'-1\'or\'0\' (0=none)<br>\n\
+drill=\'x\',\'y\'<br>\n\
 feedrate=\'inch/sec\'<br>\n\
 fillet (toggle fillet)<br>\n\
 g,\'gcode\'<br>\n\

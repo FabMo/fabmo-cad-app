@@ -6,7 +6,7 @@
 	"main":"./index.html",
 	"icon":"icon.png",
 	"icon_color":"#fff",
-	"version":"0.1.4",
+	"version":"0.1.5",
 	"author":"Jonathan Ward",
 	"website":"http://gofabmo.org/fabmo-cad-app",
 	"description":"CAD",
