@@ -211,16 +211,6 @@ function draw(){
 		ctx.stroke()
 	}
 
-
-	//drill
-	for(i=0;i<lines.length;i++){
-		ctx.beginPath()
-		if((lines[i].length==4)&&(lines[i][0]==lines[i][2])&&(lines[i][1]==lines[i][3])){
-			ctx.arc(lines[i][0]*gridSpace*sf,0-lines[i][1]*gridSpace*sf,tool/2*grid*gridSpace*sf,0,Math.PI*2)
-		}
-		ctx.fill()
-	}
-
 	//ctx.setLineDash([0, 0])
 
 	//polygons
@@ -312,6 +302,29 @@ function draw(){
 			ctx.lineTo(cutout[i][0].X*gridSpace*sf,0-(cutout[i][0].Y*gridSpace*sf))
 			ctx.stroke()
 		}
+	}
+
+	//drill
+	ctx.fillStyle='rgba(255,255,255,0.6'
+	ctx.strokeStyle='#000'
+	ctx.lineWidth=1
+	for(i=0;i<lines.length;i++){
+		
+		if((lines[i].length==4)&&(lines[i][0]==lines[i][2])&&(lines[i][1]==lines[i][3])){
+
+			ctx.beginPath()
+				ctx.arc(lines[i][0]*gridSpace*sf,0-lines[i][1]*gridSpace*sf,tool/2*grid*gridSpace*sf,0,Math.PI*2)
+			ctx.fill()
+			ctx.stroke()
+			ctx.beginPath()
+				ctx.moveTo(lines[i][0]*gridSpace*sf,(0)-(lines[i][1]+tool*grid/2)*gridSpace*sf)
+				ctx.lineTo(lines[i][0]*gridSpace*sf,(0)-(lines[i][1]-tool*grid/2)*gridSpace*sf)
+				ctx.moveTo((lines[i][0]-tool*grid/2)*gridSpace*sf,(0)-lines[i][1]*gridSpace*sf)
+				ctx.lineTo((lines[i][0]+tool*grid/2)*gridSpace*sf,(0)-lines[i][1]*gridSpace*sf)
+			ctx.stroke()
+		}
+		
+		//ctx.stroke()
 	}
 
 	//cursor

@@ -1,7 +1,8 @@
 //TODO
 //
-//mm
-//drill pts
+//mm output
+//drill depth
+//shapes:polygon,heart,ellipse
 //snap endpoints
 //command history
 //polyline (close:true/false)
@@ -96,7 +97,7 @@ cutout (offset toolpath out)<br>\n\
 dim (toggle dimensions)<br>\n\
 dogbone (make dog-bone fillets)<br>\n\
 dogbone= \'1\',\'-1\'or\'0\' (0=none)<br>\n\
-drill=\'x\',\'y\'<br>\n\
+drill\'x\',\'y\'<br>\n\
 feedrate=\'inch/sec\'<br>\n\
 fillet (toggle fillet)<br>\n\
 g,\'gcode\'<br>\n\
@@ -108,7 +109,6 @@ make (download cut file)<br>\n\
 makedxf (download dxf)<br>\n\
 makeg (download gcode)<br>\n\
 makesbp (download sbp)<br>\n\
-mousewheel/pinch (zoom)<br>\n\
 move\'x\',\'y\'<br>\n\
 movelast\'x\',\'y\'<br>\n\
 name= \'filename\'<br>\n\
@@ -122,7 +122,6 @@ settings<br>\n\
 star\'x\',\'y\',\'r\'<br>\n\
 stock=\'x\',\'y\'<br>\n\
 tool=\'diameter\'<br>\n\
-touch hold (pan)<br>\n\
 unit=\'inch\',\'mm\'<br>\n\
 "
 
@@ -156,6 +155,12 @@ function runCmd(cmd){
 		pts = cmd.substring(6).split(',')
 		scalePts(pts)
 		circle(pts)	
+	}
+	else if(cmd.substring(0,5)=="drill"){
+		cmd = rmComma(cmd,5)
+		pts = cmd.substring(5).split(',')
+		scalePts(pts)
+		drill(pts)
 	}
 	else if(cmd=="fillet"){
 		pockets=[]
@@ -276,7 +281,11 @@ function runCmd(cmd){
 	}
 	else if(cmd.substring(0,9)=="cutdepth="){
 		cutDepth=parseFloat(cmd.substring(9))
-		cmd = 'cutdepth = ' + cutDepth +"\""
+		cmd = 'cutdepth = ' + cutDepth
+
+		if(unit=='mm'){
+			cutDepth = parseFloat(cutDepth/25.4)
+		}
 	}
 	else if(cmd=="dim"){
 		if(dims==true){
@@ -292,12 +301,13 @@ function runCmd(cmd){
 	else if(cmd.substring(0,9)=="feedrate="){
 		feedrate=parseFloat(cmd.substring(9))
 		cmd = 'feedrate = ' + feedrate +" in/sec"
+		//TODO
+		//mm
 	}
 	else if(cmd.substring(0,5)=="grid="){
 		clearAll()
 		//
 		
-
 		stock[0]=stock[0]/grid
 		stock[1]=stock[1]/grid
 		if(unit=='inch'){
@@ -354,11 +364,16 @@ function runCmd(cmd){
 	}
 	else if(cmd.substring(0,10)=="passdepth="){
 		passDepth=parseFloat(cmd.substring(10))
-		cmd = 'passdepth = ' + passDepth +"\""
+		cmd = 'passdepth = ' + passDepth
+		if(unit=='mm'){
+			passDepth = parseFloat((passDepth/25.4))
+		}
 	}
 	else if(cmd.substring(0,11)=="plungerate="){
 		plungerate=parseFloat(cmd.substring(11))
 		cmd = 'plungerate = ' + plungerate +" in/sec"
+		//TODO
+		//mm
 	}
 	else if(cmd=="runmacro"){
 		console.log('runmacro')
@@ -385,6 +400,10 @@ function runCmd(cmd){
 		cmd=cmd.substring(5,cmd.length)
 		if(cmd =='mm'){
 
+			if(cutDepth==0.05){
+				cutDepth=1/25.4
+			}
+
 			grid=(1/0.19685)
 			stock=[3.937,3.937]
 			defineStock(stock)
@@ -396,7 +415,7 @@ function runCmd(cmd){
 			unit = 'mm'			
 		}
 		else if((cmd =='inch')||(cmd=="\"")){
-			
+			cutDepth=0.05
 			cmd='inch'
 
 			grid=4
@@ -537,9 +556,6 @@ function runMacro(){
 
 
 function minMax(){
-
-	//TODO minMax for each part
-	//console.log("max")
 
 	xmin = 1000
 	xmax	= -1000
@@ -696,34 +712,6 @@ function scalePts(pts,cmd){
 	}
 }
 
-function rect(pts){
-	if(pts.length==4){
-		lines.push([])
-		lines[lines.length-1].push(pts[0],pts[1],(pts[0]+pts[2]),pts[1],(pts[0]+pts[2]),(pts[1]+pts[3]),(pts[0]),(pts[1]+pts[3]),pts[0],pts[1])
-		point = [lines[lines.length-1][0],lines[lines.length-1][1]]
-	}
-	else if(pts.length==3){
-		lines.push([])
-		lines[lines.length-1].push(pts[0],pts[1],(pts[0]+pts[2]),pts[1],(pts[0]+pts[2]),(pts[1]+pts[2]),(pts[0]),(pts[1]+pts[2]),pts[0],pts[1])
-		point = [lines[lines.length-1][0],lines[lines.length-1][1]]
-	}
-	
-}
-
-function line(pts){
-	if(pts.length==4){
-		lines.push(pts)
-		point = [lines[lines.length-1][2],lines[lines.length-1][3]]
-	}
-	else if(pts.length==2){
-		pts.splice(0,0,point[1])
-		pts.splice(0,0,point[0])
-		lines.push(pts)
-		point = [lines[lines.length-1][2],lines[lines.length-1][3]]
-	}	
-}
-
-
 function move(pts){
 	x=parseFloat(pts[0])
 	y=parseFloat(pts[1])
@@ -748,68 +736,6 @@ function moveLast(pts){
 
 }
 
-
-function arc(pts){
-
-	console.log(pts)
-	
-	Cx=parseFloat(pts[0])
-	Cy=parseFloat(pts[1])
-	r=parseFloat(pts[2])
-	a1=(parseFloat(pts[3]))*(Math.PI/180)
-	a2=(parseFloat(pts[4]))*(Math.PI/180)
-	v=Math.ceil(r*2*Math.PI*30)
-
-	a2=Math.round(((a2-a1)/(Math.PI*2))*v)
-
-	lines.push([])
-		for(i=0;i<(a2);i++){
-			lines[lines.length-1].push((Cx)+Math.sin((Math.PI*2)/v*i+a1)*r)
-			lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*i+a1)*r)
-		}
-
-	point=[Cx,Cy]
-	//point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
-}
-
-
-
-function circle(pts){
-	
-	Cx=parseFloat(pts[0])
-	Cy=parseFloat(pts[1])
-	r=parseFloat(pts[2])
-	v=Math.ceil(r*2*Math.PI*30)
-
-	lines.push([])
-		for(i=0;i<=v;i++){
-			lines[lines.length-1].push((Cx)+Math.sin((Math.PI*2)/v*i)*r)
-			lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*i)*r)
-		}
-
-	point=[Cx,Cy]
-	//point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
-}
-
-function star(pts){
-	lines.push([])
-
-	Cx=parseFloat(pts[0])
-	Cy=parseFloat(pts[1])
-	r=parseFloat(pts[2])
-	v=5
-
-	for(i=0;i<2;i++){
-		j=0
-		while(j<=4){
-			lines[lines.length-1].push((Cx)+Math.sin((Math.PI*2)/v*(i+j))*r)
-			lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*(i+j))*r)
-			j+=2
-		}
-	}
-	point=[Cx,Cy]
-	//console.log(lines)
-}
 
 function zoomExtents(s){
 	console.log(s[1]*gridSpace*sf)
@@ -1413,133 +1339,7 @@ function makeDogbones(pts,pgOut){
 
 
 
-function pocket(){
 
-	cutout=[]
-
-	console.log(polygons)
-
-	pockets=polygons
-	for(i=0;i<insidePolygons.length;i++){
-		pockets.push(insidePolygons[i])
-		o = ClipperLib.Clipper.Orientation(pockets[pockets.length-1])
-		if(o==true){
-			pockets[pockets.length-1].reverse()
-		}
-	}
-
-
-	for(i=0;i<pockets.length;i++){
-		pockets[i].pop()
-	}
-
-	ClipperLib.JS.ScaleUpPaths(pockets, scale)
-	var co = new ClipperLib.ClipperOffset(0.25, 0.25)
-	co.AddPaths(pockets, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon)
-
-	t = Math.floor((tool/2*grid) * scale)
-
-	pockets=[]
-	o=1
-	while(o>0){
-		offset = new ClipperLib.Paths()
-
-		co.Execute(offset,-(t*o))
-
-		if(offset.length!=0){
-			o++
-			for(i=0;i<offset.length;i++){
-				pockets.push(offset[i])
-			}
-		}
-		else{
-			o=0
-		}
-	}
-
-	pockets.reverse()
-
-	ClipperLib.JS.ScaleDownPaths(pockets, scale)
-
-	//sort
-
-	console.log(pockets)
-
-   // 0 = false
-   //-1 = on
-   // 1 = in
-
-	temp=[]
-
-	while(pockets.length>0){
-
-	temp.push([])
-	temp[temp.length-1].push(pockets[pockets.length-1])
-	pockets.pop()
-
-	for(i=pockets.length-1;i>=0;i--){
-		inpg = ClipperLib.Clipper.PointInPolygon(pockets[i][0],temp[temp.length-1][0])
-		//console.log(inpg)
-		if(inpg==1){
-			temp[temp.length-1].push(pockets[i])
-			pockets.splice(i,1)
-		}
-	}
-
-	}
-
-
-	for(i=0;i<temp.length;i++){
-		temp[i][0].reverse()
-		temp[i].reverse()
-	}
-
-	//console.log(temp)
-
-	pockets=temp
-
-	//draw()
-
-}
-
-
-function cutOut(out){
-
-	pockets=[]
-
-	cutout=polygons
-	for(i=0;i<insidePolygons.length;i++){
-		cutout.push(insidePolygons[i])
-		o = ClipperLib.Clipper.Orientation(cutout[cutout.length-1])
-		if(o==true){
-			cutout[cutout.length-1].reverse()
-		}
-	}
-
-	for(i=0;i<cutout.length;i++){
-		cutout[i].pop()
-	}
-
-	ClipperLib.JS.ScaleUpPaths(cutout, scale)
-	var co = new ClipperLib.ClipperOffset(0.25, 0.25)
-	co.AddPaths(cutout, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon)
-	cutout = new ClipperLib.Paths()
-
-	t = Math.floor((tool/2*grid) * scale)
-
-	if(out==true){
-		co.Execute(cutout,(t))
-	}
-	else if(out==false){
-		co.Execute(cutout,-(t))
-	}
-
-	ClipperLib.JS.ScaleDownPaths(cutout, scale)
-
-	cutout.reverse()
-
-
-}
 
 
 

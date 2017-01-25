@@ -5,15 +5,20 @@
 <html lang="en">
 
 <head>
-	<title>CAD</title>
+	<title>CAD/CAM</title>
 	<meta name="viewport" content="user-scalable=no" charset="utf-8"/>
+
 	<link href="css/style.css" rel="stylesheet">
+
 	<script src="js/libs/jquery-3.1.1.min.js"></script>
 	<script src="js/libs/jquery.mousewheel.min.js"></script>
 	<script src="js/libs/fabmo.min.js"></script>
 	<script src="js/libs/clipper.js"></script>
-	<script src="js/cad.js"></script>	
+
+	<script src="js/cad.js"></script>
+	<script src="js/cam.js"></script>	
 	<script src="js/draw.js"></script>
+	<script src="js/lines.js"></script>
 	<script src="js/make.js"></script>
 </head>
 
@@ -70,7 +75,7 @@ $("#text-area").keyup(function(e){
 		}
 	}
 	else if(e.keyCode == 37){
-		console.log(this.value.substring(this.selectionStart-2,this.selectionStart))
+		//console.log(this.value.substring(this.selectionStart-2,this.selectionStart))
 		if((this.value.substring(this.selectionStart-2,this.selectionStart))=="\n>"){
 			this.selectionStart+=1
 		}
@@ -135,13 +140,15 @@ $("#text-area").click(function(){
 	this.selectionStart = this.selectionEnd = this.value.length
 })
 
+
 $("#text-area").keydown(function(e){
 
- if(e.keyCode == 8){
+ 	if(e.keyCode==8){
 		if((this.value.substring(this.value.length-2,this.value.length))=="\n>"){
 			this.value+=">"
 		}
 	}
+
 
 
 	if((e.keyCode == 38)||(e.keyCode == 40)){
@@ -244,6 +251,7 @@ $("#cad-canvas").on('touchend mouseup', function(e) {
 
 })
 
+
 $("#cad-canvas").on('touchmove mousemove', function(e) {
 
 	e.preventDefault()
@@ -321,6 +329,8 @@ $("#cad-canvas").on('mousewheel',function(e){
 	//console.log(zoom)
 	draw()
 })
+
+
 
 </script>
 
