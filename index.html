@@ -170,6 +170,9 @@ $("#text-area").keydown(function(e){
 		if((cmdHistory.length>0)&&(historyIndex<cmdHistory.length)){
 			document.getElementById('text-area').value = "FabMo CAD (\'?\' for help)\n\>\>" + cmdHistory[historyIndex]
 		}
+		else if(historyIndex==cmdHistory.length){
+			document.getElementById('text-area').value = "FabMo CAD (\'?\' for help)\n\>\>"
+		}
 	}
 
 	

@@ -37,6 +37,27 @@ function circle(pts){
 	point=[Cx,Cy]
 }
 
+
+function polygon(pts){
+	
+	Cx=parseFloat(pts[0])
+	Cy=parseFloat(pts[1])
+	r=parseFloat(pts[2])
+	v=parseInt(pts[3]/grid)
+	if(v<3){
+		v=3
+	}
+
+	lines.push([])
+		for(i=0;i<=v;i++){
+			lines[lines.length-1].push((Cx)+Math.sin((Math.PI*2)/v*i)*r)
+			lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*i)*r)
+		}
+
+	point=[Cx,Cy]
+}
+
+
 function drill(pts){
 	if(pts.length==2){
 		lines.push([pts[0],pts[1],pts[0],pts[1]])

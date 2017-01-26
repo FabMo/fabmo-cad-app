@@ -57,6 +57,7 @@ var fillets = []
 var filletOut = []
 var filletIn = []
 
+
 var sf = 1
 
 var zoom = 2
@@ -73,6 +74,7 @@ var mousePanX = 0
 var mousePanY = 0
 
 var point = [0,0]
+var centerPoints = []
 
 var lines = []
 
@@ -118,6 +120,7 @@ name= \'filename\'<br>\n\
 output=\'dxf\',\'gcode\' or \'sbp\'<br>\n\
 passdepth=\'z\' or \'-1\' (default: \'-1\' for tool diameter)<br>\n\
 pocket (pocket toolpath)<br>\n\
+polygon \'x\',\'y',\'r\',\'n\' <br>\n\
 plungerate=\'inch/sec\'<br>\n\
 rect\'x\',\'y\',\'lx\',\'ly\'<br>\n\
 rectmode=\'center\'or\'lower-left\'<br>\n\
@@ -207,6 +210,12 @@ function runCmd(cmd){
 		pts = cmd.substring(4).split(',')
 		scalePts(pts)
 		move(pts)
+	}
+	else if(cmd.substring(0,7)=="polygon"){
+		cmd = rmComma(cmd,7)
+		pts = cmd.substring(7).split(',')
+		scalePts(pts)
+		polygon(pts)	
 	}
 	else if((cmd.substring(0,4)=="rect") && (cmd.substring(0,9)!="rectangle")&& (cmd.substring(0,8)!="rectmode")){
 		cmd = rmComma(cmd,4)

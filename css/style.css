@@ -12,6 +12,7 @@ body{
 }
 
 #text-area{
+	resize: none;
 	position:absolute;
 	left:5px;
 	top:5px;
@@ -28,6 +29,7 @@ body{
 }
 
 #macro{
+	resize: horizontal;
 	display:none;
 	position:absolute;
 	left:5px;
