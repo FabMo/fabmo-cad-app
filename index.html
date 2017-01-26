@@ -70,12 +70,10 @@ $("#text-area").keyup(function(e){
 	}
 	else if(e.keyCode == 8){
 		if((this.value.substring(this.value.length-2,this.value.length))=="\n>"){
-			//console.log("end")
 			this.value+=">"
 		}
 	}
 	else if(e.keyCode == 37){
-		//console.log(this.value.substring(this.selectionStart-2,this.selectionStart))
 		if((this.value.substring(this.selectionStart-2,this.selectionStart))=="\n>"){
 			this.selectionStart+=1
 		}
@@ -120,9 +118,8 @@ $("#cad-canvas").on('click',function(e){
 			cmdHistory.push("line"+(lines[lines.length-1][0]/grid*25.4).toFixed(2)+","+(lines[lines.length-1][1]/grid*25.4).toFixed(2)+","+(lines[lines.length-1][2]/grid*25.4).toFixed(2)+","+(lines[lines.length-1][3]/grid*25.4).toFixed(2))
 		}
 		historyIndex=cmdHistory.length
-		//console.log(cmdHistory)
+
 	}
-	//
 
 	makePath()
 	draw()
@@ -182,11 +179,6 @@ $("#text-area").keydown(function(e){
 
 $("body").keydown(function(e){
 
-	//move last
-	//+shift move all
-	//nudge/nudge last
-
-	
 	if(e.keyCode == 37){
 		//moveLast([-1,0])
 	}

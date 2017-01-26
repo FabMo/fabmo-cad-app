@@ -1,13 +1,13 @@
 //TODO
 //
-//mm output
-//drill depth
-//shapes:polygon,heart,ellipse
+//rectmode
+//rotatelast
 //snap endpoints
 //command history
 //polyline (close:true/false)
 //line join update
 //fillet curves
+//fonts?
 
 var gridSpace = 20
 var gridIncrement = 10
@@ -24,7 +24,8 @@ var feedrate = 0.5
 var plungerate = 0.2
 var passDepth = -1
 var name = 'cad'
-unit = 'inch'
+var unit = 'inch'
+var rectMode = 'lower-left'
 
 var cmdHistory = []
 var historyIndex = -1
@@ -86,10 +87,10 @@ var drill = []
 var toolpath
 
 var help="\
-arc \'x1\',\'y1\',\'r\',\'a1\',\'a2\'<br>\n\
+arc \'x\',\'y\',\'r\',\'a1\',\'a2\'<br>\n\
 calc (eval)<br>\n\
 chamfer (toggle chamfer)<br>\n\
-circle \'x1\',\'y1\',\'r\'<br>\n\
+circle \'x\',\'y\',\'r\'<br>\n\
 clear (new drawing)<br>\n\
 cutdepth=\'z\'<br>\n\
 cutin (offset toolpath in)<br>\n\
@@ -98,12 +99,14 @@ dim (toggle dimensions)<br>\n\
 dogbone (make dog-bone fillets)<br>\n\
 dogbone= \'1\',\'-1\'or\'0\' (0=none)<br>\n\
 drill\'x\',\'y\'<br>\n\
+ellipse\'x\',\'y\',\'rx\',\'ry\'<br>\n\
 feedrate=\'inch/sec\'<br>\n\
 fillet (toggle fillet)<br>\n\
 g,\'gcode\'<br>\n\
 grid=\'grid space (inch)\'<br>\n\
+heart \'x\',\'y\',\'r\'<br>\n\
 line \'x1\',\'y1',\'x2\',\'y2\' <br>\n\
-line \'x2\',\'y2\'<br>\n\
+line \'x2\',\'y2\'(last point=start)<br>\n\
 macro (show macro text area)<br>\n\
 make (download cut file)<br>\n\
 makedxf (download dxf)<br>\n\
@@ -117,6 +120,7 @@ passdepth=\'z\' or \'-1\' (default: \'-1\' for tool diameter)<br>\n\
 pocket (pocket toolpath)<br>\n\
 plungerate=\'inch/sec\'<br>\n\
 rect\'x\',\'y\',\'lx\',\'ly\'<br>\n\
+rectmode=\'center\'or\'lower-left\'<br>\n\
 sbp,\'sbp command\'<br>\n\
 settings<br>\n\
 star\'x\',\'y\',\'r\'<br>\n\
@@ -162,6 +166,12 @@ function runCmd(cmd){
 		scalePts(pts)
 		drill(pts)
 	}
+	else if(cmd.substring(0,7)=="ellipse"){
+		cmd = rmComma(cmd,7)
+		pts = cmd.substring(7).split(',')
+		scalePts(pts)
+		ellipse(pts)	
+	}
 	else if(cmd=="fillet"){
 		pockets=[]
 		cutout=[]
@@ -173,6 +183,12 @@ function runCmd(cmd){
 		else{
 			fillet=true
 		}
+	}
+	else if(cmd.substring(0,5)=="heart"){
+		cmd = rmComma(cmd,5)
+		pts = cmd.substring(5).split(',')
+		scalePts(pts)
+		heart(pts)	
 	}
 	else if(cmd.substring(0,4)=="line"){
 		cmd = rmComma(cmd,4)
@@ -192,9 +208,23 @@ function runCmd(cmd){
 		scalePts(pts)
 		move(pts)
 	}
-	else if((cmd.substring(0,4)=="rect") && (cmd.substring(0,9)!="rectangle")){
+	else if((cmd.substring(0,4)=="rect") && (cmd.substring(0,9)!="rectangle")&& (cmd.substring(0,8)!="rectmode")){
 		cmd = rmComma(cmd,4)
 		pts = cmd.substring(4).split(',')
+		point = [pts[0]*grid,pts[1]*grid]
+		if(unit=='mm'){
+			point = [pts[0]/25.4*grid,pts[1]/25.4*grid]
+		}
+		if(rectMode=='center'){
+			if(pts.length==4){
+				pts[0]-=(pts[2]/2)
+				pts[1]-=(pts[3]/2)
+			}
+			else if(pts.length==3){
+				pts[0]-=(pts[2]/2)
+				pts[1]-=(pts[2]/2)	
+			}
+		}	
 		scalePts(pts)
 		rect(pts)
 	}
@@ -328,8 +358,8 @@ function runCmd(cmd){
 	else if(cmd=="macro"){
 
 		if(document.getElementById('macro').style.display=='inline'){			
-			$("#macro").hide(200)
-			$("#runmacro").hide(100)
+			$("#macro").hide(400)
+			$("#runmacro").hide(200)
 			cmd='hide macro'
 		}
 		else{
@@ -374,6 +404,12 @@ function runCmd(cmd){
 		cmd = 'plungerate = ' + plungerate +" in/sec"
 		//TODO
 		//mm
+	}
+	else if(cmd.substring(0,9)=="rectmode="){
+		if((cmd.substring(9)=="center")||(cmd.substring(9)=="lower-left")){
+			rectMode=(cmd.substring(9))
+			cmd = 'rectanglemode = ' + rectMode
+		}
 	}
 	else if(cmd=="runmacro"){
 		console.log('runmacro')
@@ -1001,7 +1037,7 @@ function makeFillets(pg,pgOut){
 			var l2 = Math.sqrt( (Math.pow(Math.abs(x1-x3),2)) + (Math.pow(Math.abs(y1-y3),2)) )
 			
 			//fillet min length
-			if((l1>(d3))&&(l2>(d3))){
+			if((l1>(d2))&&(l2>(d2))){
 
 				d = Math.sqrt( (Math.pow((x1-x3),2)) + (Math.pow((y1-y3),2)) ) 
 				r = dist/d 

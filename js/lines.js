@@ -7,7 +7,7 @@ function arc(pts){
 	r=parseFloat(pts[2])
 	a1=(parseFloat(pts[3]))*(Math.PI/180)
 	a2=(parseFloat(pts[4]))*(Math.PI/180)
-	v=Math.ceil(r*2*Math.PI*30)
+	v=Math.ceil(r*2*Math.PI*10)
 
 	a2=Math.round(((a2-a1)/(Math.PI*2))*v)
 
@@ -18,7 +18,6 @@ function arc(pts){
 		}
 
 	point=[Cx,Cy]
-	//point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
 }
 
 
@@ -27,7 +26,7 @@ function circle(pts){
 	Cx=parseFloat(pts[0])
 	Cy=parseFloat(pts[1])
 	r=parseFloat(pts[2])
-	v=Math.ceil(r*2*Math.PI*30)
+	v=Math.ceil(r*2*Math.PI*10)
 
 	lines.push([])
 		for(i=0;i<=v;i++){
@@ -36,7 +35,6 @@ function circle(pts){
 		}
 
 	point=[Cx,Cy]
-	//point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
 }
 
 function drill(pts){
@@ -44,6 +42,53 @@ function drill(pts){
 		lines.push([pts[0],pts[1],pts[0],pts[1]])
 		point = [pts[0],pts[1]]
 	}	
+}
+
+
+function ellipse(pts){
+	
+	Cx=parseFloat(pts[0])
+	Cy=parseFloat(pts[1])
+	r=parseFloat(pts[2])
+	r2=parseFloat(pts[3])
+	v=Math.ceil(r*2*Math.PI*10)
+
+	//console.log(r2)
+	lines.push([])
+		for(i=0;i<=v;i++){
+			lines[lines.length-1].push((Cx)+Math.sin((Math.PI*2)/v*i)*r)
+			lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*i)*r2)
+		}
+
+	point=[Cx,Cy]
+	//point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
+}
+
+
+
+function heart(pts){
+
+	Cx=parseFloat(pts[0])
+	Cy=parseFloat(pts[1])
+	radius=parseFloat(pts[2])
+	//v=Math.ceil(radius*2*Math.PI*10)
+	v=64*radius
+
+	lines.push([])
+
+		for(i=0;i<=v;i++){
+
+      	t = (Math.PI*2/v*i)
+
+      	r = ((Math.sin(t) * (Math.sqrt(Math.abs(Math.cos(t)))) ) /(Math.sin(t)+ 1.4) - (2*Math.sin(t)) + 2 + 0.001)
+
+			lines[lines.length-1].push(Cx+r*Math.sin(t-Math.PI/2)*(radius/2.52))
+			lines[lines.length-1].push((radius/1.69)+Cy+r*Math.cos(t-Math.PI/2)*(radius/2.52))
+		}
+
+	//console.log(lines)
+	point=[Cx,Cy]
+
 }
 
 function line(pts){
@@ -64,12 +109,11 @@ function rect(pts){
 	if(pts.length==4){
 		lines.push([])
 		lines[lines.length-1].push(pts[0],pts[1],(pts[0]+pts[2]),pts[1],(pts[0]+pts[2]),(pts[1]+pts[3]),(pts[0]),(pts[1]+pts[3]),pts[0],pts[1])
-		point = [lines[lines.length-1][0],lines[lines.length-1][1]]
+		
 	}
 	else if(pts.length==3){
 		lines.push([])
 		lines[lines.length-1].push(pts[0],pts[1],(pts[0]+pts[2]),pts[1],(pts[0]+pts[2]),(pts[1]+pts[2]),(pts[0]),(pts[1]+pts[2]),pts[0],pts[1])
-		point = [lines[lines.length-1][0],lines[lines.length-1][1]]
 	}
 	
 }
