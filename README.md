@@ -13,7 +13,7 @@ FabMo CAD is a web app for drawing simple shapes in a browser and creating toolp
 
 ###Drawing with Commands
 
-Enter these commands in the text area to draw and toolpath a simple pocket:
+Enter these commands in the text area to draw and toolpath a simple pocket.
 
 
 `rect0` ,0,1 (draw a 1" square at 0,0)  
@@ -45,18 +45,31 @@ cutout
 makeg
 ```
 
+![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad2.png)  
+
+####Toolpath Commands
+
+`cutin` (cut in toolpath)  
+`cutout` (cut out toolpath)  
+`drillx,y` (drill @ x,y)
+`pocket` (pocket toolpath)  
+
 ####Make Commands
 
-makesbp (download ShopBot program)  
-makeg (download gcode)  
-makedxf (download dxf)  
+`makesbp` (download ShopBot program)  
+`makeg` (download gcode)  
+`makedxf` (download dxf)  
 
-![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad2.png)  
+###Drill Points
+
+A click on the same point twice or the `drillx,y` command will insert a drill point.  
+
+![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad4.png)  
 
 ###Macros
 
-The 'macro' command will show/hide the macro text area.  
-Copy and paste the commands below into the macro text area and then click the 'run' button.  
+The `macro` command will show/hide the macro text area.  
+Copy and paste the commands below into the macro text area and then click the 'run' button or with `runmacro`.  
 
 ```
 circle2,2,1.5
@@ -66,7 +79,7 @@ arc2,2,1,100,260
 cutout
 ```
 
-###Default Settings
+####Default Settings
 
 tool diameter: 0.125"  
 pass depth: tool diameter  
@@ -75,13 +88,15 @@ fillet radius: tool radius
 feedrate: 0.5 inch/sec  
 plunge rate: 0.2 inch/sec  
 unit: inch  
-stock: 4" x 4"
-grid: 0.25"
+stock: 4" x 4"  
+grid: 0.25"  
+
+The `settings` command will show current settings.  
 
 ###Dimensions & Units
 
-The 'dim' command will show/hide drawing dimensions.  
-The default units are inches and degrees. The length unit can be changed to millimeter by entering the command 'unit=mm'.  The grid space can be set with the command 'grid=2' to change the space to 2mm.  
+The `dim` command will show/hide drawing dimensions.  
+The default units are inches and degrees. The length unit can be changed to millimeter by entering this command: `unit=mm`  The grid space can be set with the command 'grid=2' to change the space to 2mm.  
 
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad3.png)  
