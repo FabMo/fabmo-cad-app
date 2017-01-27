@@ -16,7 +16,7 @@ FabMo CAD is a web app for drawing simple shapes in a browser and creating toolp
 Enter these commands in the text area to draw and toolpath a simple pocket.
 
 
-`rect0` ,0,1 (draw a 1" square at 0,0)  
+`rect0,0,1` (draw a 1" square at 0,0)  
 `dogbone` (create dogbone fillets)  
 `pocket` (create pocket toolpath)  
 `makeg` (download gcode or 'makesbp' to download the ShopBot program file)  
