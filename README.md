@@ -47,6 +47,19 @@ makeg
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad2.png)  
 
+###Macros
+
+The `macro` command will show/hide the macro text area.  
+Copy and paste the commands below into the macro text area and then click the 'run' button or use the `runmacro` command.  
+
+```
+circle2,2,1.5
+circle1.3,2.5,0.25
+circle2.7,2.5,0.25
+arc2,2,1,90,270
+cutout
+```
+
 ####Toolpath Commands
 
 `cutin` (cut in toolpath)  
@@ -66,20 +79,15 @@ A click on the same point twice or the `drillx,y` command will insert a drill po
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad4.png)  
 
-###Macros
+###Dimensions & Units
 
-The `macro` command will show/hide the macro text area.  
-Copy and paste the commands below into the macro text area and then click the 'run' button or with `runmacro`.  
+The `dim` command will show/hide drawing dimensions.  
+The default units are inches and degrees. The length unit can be changed to millimeter by entering this command: `unit=mm`  The grid space can be set with the command `grid=2` to change the grid space to 2mm.  
 
-```
-circle2,2,1.5
-circle1.3,2.5,0.25
-circle2.7,2.5,0.25
-arc2,2,1,100,260
-cutout
-```
 
-####Default Settings
+![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad3.png)  
+
+##Default Settings
 
 tool diameter: 0.125"  
 pass depth: tool diameter  
@@ -93,13 +101,67 @@ grid: 0.25"
 
 The `settings` command will show current settings.  
 
-###Dimensions & Units
+##Commands
 
-The `dim` command will show/hide drawing dimensions.  
-The default units are inches and degrees. The length unit can be changed to millimeter by entering this command: `unit=mm`  The grid space can be set with the command `grid=2` to change the grid space to 2mm.  
+The `help` or `?` command will show all commands.  
 
-
-![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad3.png)  
+###Drawing
 
 
+####shapes
+
+`arc'x','y','r','a1','a2'`  
+`circle'x','y','r'`  
+`drill'x','y'`  
+`ellipse'x','y','rx','ry'`  
+`heart 'x','y','r'`  
+`line 'x1','y1','x2','y2'`   
+`line 'x2','y2'`  
+`polygon 'x','y','r','n'`   
+`rect'x','y','lx','ly'`  
+`star'x','y','r'`  
+
+####features
+
+`chamfer` toggle chamfer=(true/false)  
+`dogbone` make dog-bone fillets  
+`fillet` toggle fillet=(true/false)  
+
+####transforms
+
+`move'x','y'` translate all  
+`movelast'x','y'` translate last shape/line  
+`rotate'a'` rotate last shape/line  
+
+###Settings
+
+`cutdepth='z'`  
+`dogbone= '1','-1'or'0'` (0=none)  
+`feedrate='cut (xy) velocity'` (inch/sec)  
+`grid='grid space'`'  
+`name='filename'`  
+`output='dxf','gcode' or 'sbp'`  
+`passdepth='z' or '-1'` (default='-1' for tool diameter)  
+`plungerate='plunge (-z) velocity'` (inch/sec)  
+`rectmode='center'or'lower-left'`  
+`stock='xl','yl'`  
+`tool='diameter'` (inch)  
+`unit='length unit` ('inch' or 'mm')  
+
+###Tools
+
+`calc` evaluate (e.g. `calc5/25.4`)  
+`clear` new drawing  
+`cutin` offset toolpath inside  
+`cutout` offset toolpath to cut out  
+`dim` toggle dimensions  
+`g,'gcode'` run gcode (eg `g,g0x0y0`  
+`macro` show macro text area  
+`make` download cut file  
+`makedxf` download dxf  
+`makeg` download gcode  
+`makesbp` download sbp  
+`pocket` pocket toolpath  
+`sbp,'sbp'` run sbp command (e.g. `sbp,JZ,0.5`)  
+`settings` show current settings  
 
