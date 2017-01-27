@@ -11,13 +11,14 @@ function arc(pts){
 
 	a2=Math.round(((a2-a1)/(Math.PI*2))*v)
 
-	lines.push([])
+	lines.push([Cx,Cy])
 		for(i=0;i<(a2);i++){
 			lines[lines.length-1].push((Cx)+Math.sin((Math.PI*2)/v*i+a1)*r)
 			lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*i+a1)*r)
 		}
+		lines[lines.length-1].push(Cx,Cy)
 
-	point=[Cx,Cy]
+	//point=[Cx,Cy]
 }
 
 
@@ -34,7 +35,7 @@ function circle(pts){
 			lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*i)*r)
 		}
 
-	point=[Cx,Cy]
+	//point=[Cx,Cy]
 }
 
 
@@ -54,7 +55,7 @@ function polygon(pts){
 			lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*i)*r)
 		}
 
-	point=[Cx,Cy]
+	//point=[Cx,Cy]
 }
 
 
@@ -81,7 +82,7 @@ function ellipse(pts){
 			lines[lines.length-1].push((Cy)+Math.cos((Math.PI*2)/v*i)*r2)
 		}
 
-	point=[Cx,Cy]
+	//point=[Cx,Cy]
 	//point = [lines[lines.length-1][lines[lines.length-1].length-2],lines[lines.length-1][lines[lines.length-1].length-1]]
 }
 
@@ -108,7 +109,7 @@ function heart(pts){
 		}
 
 	//console.log(lines)
-	point=[Cx,Cy]
+	//point=[Cx,Cy]
 
 }
 
@@ -118,6 +119,7 @@ function line(pts){
 		point = [lines[lines.length-1][2],lines[lines.length-1][3]]
 	}
 	else if(pts.length==2){
+		centerPoints[centerPoints.length-1]=({X:parseFloat(point[0]/grid),Y:parseFloat(point[1]/grid)})
 		pts.splice(0,0,point[1])
 		pts.splice(0,0,point[0])
 		lines.push(pts)
@@ -156,7 +158,7 @@ function star(pts){
 			j+=2
 		}
 	}
-	point=[Cx,Cy]
+	//point=[Cx,Cy]
 	//console.log(lines)
 }
 

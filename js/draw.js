@@ -241,9 +241,19 @@ function draw(){
 		ctx.fillStyle='#00ff00'
 	}
 
-	if(lines.length>0){
+	
+	if((lines.length>0)&&(point[0]!=0)&&(point[1]!=0)){
 		ctx.beginPath()
 		ctx.arc(point[0]*sf*gridSpace,0-point[1]*sf*gridSpace,2,0,Math.PI*2)
+		ctx.fill()
+		ctx.stroke()
+	}
+	
+	//center points
+	ctx.fillStyle='#fff'
+	for(i=0;i<centerPoints.length;i++){
+		ctx.beginPath()
+		ctx.arc(centerPoints[i].X*grid*sf*gridSpace,0-centerPoints[i].Y*grid*sf*gridSpace,2,0,Math.PI*2)
 		ctx.fill()
 		ctx.stroke()
 	}
@@ -321,6 +331,8 @@ function draw(){
 	ctx.moveTo(mouseX,mouseY)
 	ctx.arc(mouseX,mouseY,3,0,Math.PI*2)
 	
+
+	
 	if(lines.length>0){
 		if(lines[lines.length-1].length==2){
 			ctx.moveTo(point[0]*sf*gridSpace,0-point[1]*sf*gridSpace)
@@ -329,8 +341,11 @@ function draw(){
 			ctx.lineTo(mouseX,mouseY)
 		}
 	}
+	
+	
 	ctx.stroke()
 	ctx.fill()
+	
 
 	/*
 	ctx.lineWidth=1.1*sf

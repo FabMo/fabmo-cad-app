@@ -101,10 +101,12 @@ $("#cad-canvas").on('click',function(e){
 	if(lines.length==0){
 		point=[x,y]
 		lines.push([x,y])
+		centerPoints.push({X:parseFloat(x/grid),Y:parseFloat(y/grid)})
 	}
 	else if(lines[lines.length-1].length>=4){
 		point=[x,y]
 		lines.push([x,y])
+		centerPoints.push({X:parseFloat(x/grid),Y:parseFloat(y/grid)})
 	}
 	else if(lines[lines.length-1].length==2){
 		lines[lines.length-1].push(x)
@@ -120,7 +122,6 @@ $("#cad-canvas").on('click',function(e){
 		historyIndex=cmdHistory.length
 
 	}
-
 	makePath()
 	draw()
 

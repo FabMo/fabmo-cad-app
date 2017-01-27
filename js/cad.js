@@ -56,7 +56,7 @@ var fillet = false
 var fillets = []
 var filletOut = []
 var filletIn = []
-
+var filletRadius = -1
 
 var sf = 1
 
@@ -124,6 +124,7 @@ polygon \'x\',\'y',\'r\',\'n\' <br>\n\
 plungerate=\'inch/sec\'<br>\n\
 rect\'x\',\'y\',\'lx\',\'ly\'<br>\n\
 rectmode=\'center\'or\'lower-left\'<br>\n\
+rotate\'a\'(rotates last shape)<br>\n\
 sbp,\'sbp command\'<br>\n\
 settings<br>\n\
 star\'x\',\'y\',\'r\'<br>\n\
@@ -133,9 +134,12 @@ unit=\'inch\',\'mm\'<br>\n\
 "
 
 function runCmd(cmd){
+	//console.log(cmd)
 	if(cmd.substring(0,3)=="arc"){
 		cmd = rmComma(cmd,3)
 		pts = cmd.substring(3).split(',')
+
+		centerPoints.push({X:parseFloat(pts[0]),Y:parseFloat(pts[1])})
 
 		for(i=0;i<3;i++){
 			pts[i]=pts[i]*grid
@@ -160,19 +164,19 @@ function runCmd(cmd){
 	else if(cmd.substring(0,6)=="circle"){
 		cmd = rmComma(cmd,6)
 		pts = cmd.substring(6).split(',')
-		scalePts(pts)
+		scalePts(pts,cmd)
 		circle(pts)	
 	}
 	else if(cmd.substring(0,5)=="drill"){
 		cmd = rmComma(cmd,5)
 		pts = cmd.substring(5).split(',')
-		scalePts(pts)
+		scalePts(pts,cmd)
 		drill(pts)
 	}
 	else if(cmd.substring(0,7)=="ellipse"){
 		cmd = rmComma(cmd,7)
 		pts = cmd.substring(7).split(',')
-		scalePts(pts)
+		scalePts(pts,cmd)
 		ellipse(pts)	
 	}
 	else if(cmd=="fillet"){
@@ -190,41 +194,42 @@ function runCmd(cmd){
 	else if(cmd.substring(0,5)=="heart"){
 		cmd = rmComma(cmd,5)
 		pts = cmd.substring(5).split(',')
-		scalePts(pts)
+		scalePts(pts,cmd)
 		heart(pts)	
 	}
 	else if(cmd.substring(0,4)=="line"){
 		cmd = rmComma(cmd,4)
 		pts = cmd.substring(4).split(',')
-		scalePts(pts)
+		scalePts(pts,cmd)
 		line(pts)
 	}
 	else if(cmd.substring(0,8)=="movelast"){
 		cmd = rmComma(cmd,8)
 		pts = cmd.substring(8).split(',')
-		scalePts(pts)
-		moveLast(pts)
+		scalePts(pts,'movelast')
+		moveLast(pts,'movelast')
 	}
 	else if(cmd.substring(0,4)=="move"){
 		cmd = rmComma(cmd,4)
 		pts = cmd.substring(4).split(',')
-		scalePts(pts)
-		move(pts)
+		scalePts(pts,'move')
+		move(pts,'move')
 	}
 	else if(cmd.substring(0,7)=="polygon"){
 		cmd = rmComma(cmd,7)
 		pts = cmd.substring(7).split(',')
-		scalePts(pts)
+		scalePts(pts,cmd)
 		polygon(pts)	
 	}
 	else if((cmd.substring(0,4)=="rect") && (cmd.substring(0,9)!="rectangle")&& (cmd.substring(0,8)!="rectmode")){
 		cmd = rmComma(cmd,4)
 		pts = cmd.substring(4).split(',')
-		point = [pts[0]*grid,pts[1]*grid]
+		//point = [pts[0]*grid,pts[1]*grid]
 		if(unit=='mm'){
-			point = [pts[0]/25.4*grid,pts[1]/25.4*grid]
+			//point = [pts[0]/25.4*grid,pts[1]/25.4*grid]
 		}
 		if(rectMode=='center'){
+			centerPoints.push({X:parseFloat(pts[0]),Y:parseFloat(pts[1])})
 			if(pts.length==4){
 				pts[0]-=(pts[2]/2)
 				pts[1]-=(pts[3]/2)
@@ -234,14 +239,23 @@ function runCmd(cmd){
 				pts[1]-=(pts[2]/2)	
 			}
 		}	
-		scalePts(pts)
+		scalePts(pts,cmd)
 		rect(pts)
+	}
+	else if(cmd.substring(0,6)=="rotate"){
+		console.log('rotate')
+		cmd = rmComma(cmd,6)
+		cmd = cmd.substring(6)
+		a = 0-(parseFloat(cmd*(Math.PI/180)))
+		console.log(a)
+		rotateLast(a)
+		cmd = 'rotate ' + cmd
 	}
 	else if(cmd.substring(0,4)=="star"){
 		console.log('star')
 		cmd = rmComma(cmd,4)
 		pts = cmd.substring(4).split(',')
-		scalePts(pts)
+		scalePts(pts,cmd)
 		star(pts)	
 	}
 	//toolpath
@@ -491,6 +505,8 @@ function runCmd(cmd){
 	else if(cmd=="settings"){
 
 		var settings="\
+		cut depth = " + cutDepth + "<br>\n\
+		grid space = " + 1/grid.toFixed(3) + "<br>\n\
 		stock = " + (stock[0]/grid) + "," + (stock[1]/grid) +" <br>\n\
 		tool diameter = " + tool + " <br>\n\
 		unit = " + unit +" <br>\n\
@@ -512,7 +528,7 @@ function runCmd(cmd){
 			
 	}
 	else if(cmd=="clear"){
-		clearAll(true)
+		clearAll()
 		window.setTimeout("console.clear()",50)
 	}
 	else if(cmd=="makedxf"){
@@ -542,6 +558,42 @@ function runCmd(cmd){
 	return cmd
 
 }
+
+function scaleLast(s){
+
+
+
+
+}
+
+
+function rotateLast(a){
+
+	dogbonesIn=[]
+	dogbones=[]
+	pockets=[]
+	cutout=[]
+
+	if(lines.length>0){
+		for(i=0;i<lines[lines.length-1].length;i+=2){
+			lines[lines.length-1][i] -= centerPoints[centerPoints.length-1].X*grid 
+			lines[lines.length-1][i+1] -= centerPoints[centerPoints.length-1].Y*grid
+
+			x = lines[lines.length-1][i]
+			y = lines[lines.length-1][i+1]
+
+			lines[lines.length-1][i] = x * Math.cos(a) - y * Math.sin(a)
+			lines[lines.length-1][i+1] = x * Math.sin(a) + y * Math.cos(a)
+
+			lines[lines.length-1][i] += centerPoints[centerPoints.length-1].X*grid 
+			lines[lines.length-1][i+1] += centerPoints[centerPoints.length-1].Y*grid 
+		}
+	}
+	if(lines[lines.length-1].length==4){
+		point=[lines[lines.length-1][2],lines[lines.length-1][3]]
+	}
+}
+
 
 function redraw(){
 
@@ -697,14 +749,9 @@ function undo(){
 		dogbones=[]
 		bones = []
 	}
-	else if(lines.length>2){
-		lines.pop()
-		point = [lines[lines.length-1][2],lines[lines.length-1][3]]
-	}
-	else{
-		lines.pop()
-		point=[0,0]
-	}
+	centerPoints.pop()
+	lines.pop()
+
 	cmdHistory.push("undo")
 	historyIndex=cmdHistory.length
 	//console.log(lines)
@@ -718,7 +765,7 @@ function clearAll(h){
 		cmdHistory=[]
 		dims=false
 	}
-	
+	centerPoints=[]
 	differnece = []
 	union = []
 	insidePolygons=[]
@@ -745,8 +792,41 @@ function clearAll(h){
 }
 
 function scalePts(pts,cmd){
+	
+	if((pts.length>1)){
+		if(cmd.substring(0,4)=='move'){
+
+			//translate dogbones
+			dogbonesIn=[]
+			dogbones=[]
+
+			console.log(cmd)
+			if(cmd.substring(0,8)=='movelast'){
+				centerPoints[centerPoints.length-1].X+=(parseFloat(pts[0]))
+				centerPoints[centerPoints.length-1].Y+=(parseFloat(pts[1]))
+			}
+			else{	
+				for(i=0;i<centerPoints.length;i++){
+					centerPoints[i].X+=(parseFloat(pts[0]))
+					centerPoints[i].Y+=(parseFloat(pts[1]))
+				}
+			}
+		}
+
+
+
+		else if(rectMode!='center'){
+			if(unit=='inch'){
+				centerPoints.push({X:parseFloat(pts[0]),Y:parseFloat(pts[1])})	
+			}
+			else if(unit=='mm'){
+				centerPoints.push({X:parseFloat(pts[0]/25.4),Y:parseFloat(pts[1]/25.4)})
+			}
+		}
+	}
+
 	for(i=0;i<pts.length;i++){
-		if(unit=="inch"){
+		if(unit=='inch'){
 			pts[i]=pts[i]*grid
 		}
 		else if(unit=="mm"){
@@ -757,7 +837,7 @@ function scalePts(pts,cmd){
 	}
 }
 
-function move(pts){
+function move(pts,cmd){
 	x=parseFloat(pts[0])
 	y=parseFloat(pts[1])
 
