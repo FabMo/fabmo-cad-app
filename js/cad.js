@@ -1,7 +1,6 @@
 //TODO
 //
-//rectmode
-//rotatelast
+//drill dims
 //snap endpoints
 //command history
 //polyline (close:true/false)

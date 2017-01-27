@@ -13,14 +13,14 @@ FabMo CAD is a web app for drawing simple shapes in a browser and creating toolp
 
 ###Drawing with Commands
 
-Type the commands below in the text area followed by 'enter':
+Enter these commands in the text area to draw and toolpath a simple pocket:
 
-```
-rect0,0,1 (draw a 1" square at 0,0)
-dogbone (create dogbone fillets)
-pocket (create pocket toolpath)
-makeg (download gcode or 'makesbp' to download the ShopBot program file)
-```
+
+`rect0` ,0,1 (draw a 1" square at 0,0)  
+`dogbone` (create dogbone fillets)  
+`pocket` (create pocket toolpath)  
+`makeg` (download gcode or 'makesbp' to download the ShopBot program file)  
+
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad1.png)
 
@@ -53,12 +53,10 @@ makedxf (download dxf)
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad2.png)  
 
-![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/preview2.png)  
-
 ###Macros
 
 The 'macro' command will show/hide the macro text area.  
-Copy and paste the commands below into the macro text area and then click the 'run' button.
+Copy and paste the commands below into the macro text area and then click the 'run' button.  
 
 ```
 circle2,2,1.5
@@ -67,9 +65,8 @@ circle2.7,2.5,0.25
 arc2,2,1,100,260
 cutout
 ```
-![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad3.png)  
 
-##Default Settings
+###Default Settings
 
 tool diameter: 0.125"  
 pass depth: tool diameter  
@@ -81,19 +78,13 @@ unit: inch
 stock: 4" x 4"
 grid: 0.25"
 
-##Dimensions
+###Dimensions & Units
 
-The 'dim' command will show/hide drawing dimensions.
-
-![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad4.png)  
-
-##Units
-
+The 'dim' command will show/hide drawing dimensions.  
 The default units are inches and degrees. The length unit can be changed to millimeter by entering the command 'unit=mm'.  The grid space can be set with the command 'grid=2' to change the space to 2mm.  
 
-![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad5.png)  
 
+![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad3.png)  
 
-[shopbottools.com](http://shopbottools.com)
 
 
