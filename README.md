@@ -1,7 +1,7 @@
 #FabMo CAD
 
 ##Overview
-FabMo CAD is a web app for drawing simple shapes in a browser and creating toolpaths for ShopBot tools and other 3 axis CNC routers that run standard Gcode.   
+FabMo CAD is a web app for drawing simple shapes in a browser and creating cut files for ShopBot tools and other 3 axis CNC routers that run standard G-code.   
 [LIVE DEMO](http://gofabmo.org/fabmo-cad-app)  
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/crab_cad.png)
@@ -19,7 +19,7 @@ Enter these commands in the text area to draw and toolpath a simple pocket.
 `rect0,0,1` (draw a 1" square at 0,0)  
 `dogbone` (create dogbone fillets)  
 `pocket` (create pocket toolpath)  
-`makeg` (download gcode or 'makesbp' to download the ShopBot program file)  
+`makeg` (download gcode file or `makesbp` to download the ShopBot program)  
 
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad1.png)
