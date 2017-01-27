@@ -51,7 +51,7 @@ makeg
 
 `cutin` (cut in toolpath)  
 `cutout` (cut out toolpath)  
-`drillx,y` (drill @ x,y)
+`drillx,y` (drill @ x,y)  
 `pocket` (pocket toolpath)  
 
 ####Make Commands
@@ -96,7 +96,7 @@ The `settings` command will show current settings.
 ###Dimensions & Units
 
 The `dim` command will show/hide drawing dimensions.  
-The default units are inches and degrees. The length unit can be changed to millimeter by entering this command: `unit=mm`  The grid space can be set with the command 'grid=2' to change the space to 2mm.  
+The default units are inches and degrees. The length unit can be changed to millimeter by entering this command: `unit=mm`  The grid space can be set with the command `grid=2` to change the grid space to 2mm.  
 
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad3.png)  
