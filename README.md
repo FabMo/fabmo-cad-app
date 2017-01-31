@@ -9,7 +9,7 @@ FabMo CAD is a web app for drawing simple shapes in a browser and creating cut f
 
 ##Download
 
-[FabMo CAD APP](https://github.com/FabMo/fabmo-cad-app/releases/download/v0.1.5/CAD_v0.1.5.fma)
+[FabMo CAD APP](https://github.com/FabMo/fabmo-cad-app/releases/download/v0.1.6/CAD_v0.1.6.fma)
 
 
 ##Examples
