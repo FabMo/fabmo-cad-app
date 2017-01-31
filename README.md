@@ -1,19 +1,22 @@
-#FabMo CAD
+#FabMo CAD  
 
 ##Overview
-FabMo CAD is a web app for drawing simple shapes in a browser and creating cut files for ShopBot tools and other 3 axis CNC routers that run standard G-code.   
-[LIVE DEMO](http://gofabmo.org/fabmo-cad-app)  
+
+FabMo CAD is a web app for drawing simple shapes in a browser and creating cut files for [ShopBot](https://shopbottools.com) tools and 3 axis CNC routers that run standard G-code.   
+[LIVE DEMO](http://gofabmo.org/fabmo-cad-app)   
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/crab_cad.png)
 
 ##Download
-[FabMo APP](https://github.com/FabMo/fabmo-cad-app/releases/download/v0.1.5/CAD_v0.1.5.fma)
+
+[FabMo CAD APP](https://github.com/FabMo/fabmo-cad-app/releases/download/v0.1.5/CAD_v0.1.5.fma)
+
 
 ##Examples
 
-###Drawing with Commands
+###Drawing Commands
 
-Enter these commands in the text area to draw and toolpath a simple pocket.
+These commands will draw and toolpath a simple pocket.
 
 
 `rect0,0,1` (draw a 1" square at 0,0)  
@@ -26,7 +29,7 @@ Enter these commands in the text area to draw and toolpath a simple pocket.
 
 ###Simple Press-Fit Joint
 
-This project is designed for machining plywood with a material thickness slightly less than 1/4" (~0.248") and using a 1/8" endmill to make a simple press fit joint. 
+This project is designed for machining plywood with a material thickness slightly less than 1/4" (~0.248") and using a 1/8" endmill to make a simple press-fit joint. 
 
 ```
 rect0,0,1,0.75
@@ -50,7 +53,7 @@ makeg
 ###Macros
 
 The `macro` command will show/hide the macro text area.  
-Copy and paste the commands below into the macro text area and then click the 'run' button or use the `runmacro` command.  
+Copy and paste the commands below into the macro text area and then click the 'run' button or enter the `runmacro` command.  
 
 ```
 circle2,2,1.5
@@ -64,7 +67,7 @@ cutout
 
 `cutin` (cut in toolpath)  
 `cutout` (cut out toolpath)  
-`drillx,y` (drill @ x,y)  
+`drillx,y` (insert drill point @ x,y)  
 `pocket` (pocket toolpath)  
 
 ####Make Commands
@@ -96,14 +99,14 @@ fillet radius: tool radius
 feedrate: 0.5 inch/sec  
 plunge rate: 0.2 inch/sec  
 unit: inch  
-stock: 4" x 4"  
+stock: 4 x 4"  
 grid: 0.25"  
 
 The `settings` command will show current settings.  
 
 ##Commands
 
-The `help` or `?` command will show all commands.  
+The `help` or `?` command will show all commands, and the up/down keys can be used to scroll through command history.
 
 ###Drawing
 
@@ -114,9 +117,9 @@ The `help` or `?` command will show all commands.
 `circle'x','y','r'`  
 `drill'x','y'`  
 `ellipse'x','y','rx','ry'`  
-`heart 'x','y','r'`  
-`line 'x1','y1','x2','y2'`   
-`line 'x2','y2'`  
+`heart'x','y','r'`  
+`line'x1','y1','x2','y2'`   
+`line'x2','y2'`  
 `polygon 'x','y','r','n'`   
 `rect'x','y','lx','ly'`  
 `star'x','y','r'`  
@@ -131,7 +134,8 @@ The `help` or `?` command will show all commands.
 
 `move'x','y'` translate all  
 `movelast'x','y'` translate last shape/line  
-`rotate'a'` rotate last shape/line  
+`rotate'a'` rotate all  
+`rotatelast'a'` rotate last shape/line  
 
 ###Settings
 
@@ -146,7 +150,7 @@ The `help` or `?` command will show all commands.
 `rectmode='center'or'lower-left'`  
 `stock='xl','yl'`  
 `tool='diameter'` (inch)  
-`unit='length unit` ('inch' or 'mm')  
+`unit='length unit'` ('inch' or 'mm')  
 
 ###Tools
 
@@ -156,12 +160,16 @@ The `help` or `?` command will show all commands.
 `cutout` offset toolpath to cut out  
 `dim` toggle dimensions  
 `g,'gcode'` run gcode (eg `g,g0x0y0`  
-`macro` show macro text area  
+`help` or `?` show all commands  
+`macro` show/hide macro text area  
 `make` download cut file  
 `makedxf` download dxf  
 `makeg` download gcode  
 `makesbp` download sbp  
 `pocket` pocket toolpath  
+`runmacro`  
 `sbp,'sbp'` run sbp command (e.g. `sbp,JZ,0.5`)  
 `settings` show current settings  
+`undo`  
+
 

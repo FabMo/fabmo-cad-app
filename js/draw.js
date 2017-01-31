@@ -181,8 +181,8 @@ function draw(){
 	*/
 
 	//lines
-	ctx.lineWidth=2
-	ctx.strokeStyle='#ccc'
+	ctx.lineWidth=1
+	ctx.strokeStyle='#666'
 	for(i=0;i<lines.length;i++){
 		ctx.beginPath()
 		ctx.moveTo(lines[i][0]*gridSpace*sf,0-lines[i][1]*gridSpace*sf)
@@ -194,10 +194,14 @@ function draw(){
 		ctx.stroke()
 	}
 
-
 	//polygons
 	ctx.lineWidth=3
-	ctx.strokeStyle='#ee00ee'
+	if(close==true){
+		ctx.strokeStyle='#dd00dd'
+	}
+	else{
+		ctx.strokeStyle='#333'
+	}
 	for(i=0;i<polygons.length;i++){
 
 		ctx.beginPath()
@@ -206,6 +210,8 @@ function draw(){
 		}
 		ctx.stroke()
 	}
+
+
 
 
 	//inside
@@ -242,18 +248,30 @@ function draw(){
 	}
 
 	
-	if((lines.length>0)&&(point[0]!=0)&&(point[1]!=0)){
+	if(lines.length>0){
 		ctx.beginPath()
-		ctx.arc(point[0]*sf*gridSpace,0-point[1]*sf*gridSpace,2,0,Math.PI*2)
+		//if(lines[lines.length-1].length<=4){
+			ctx.arc(lines[lines.length-1][lines[lines.length-1].length-2]*gridSpace*sf,0-lines[lines.length-1][lines[lines.length-1].length-1]*gridSpace*sf,5,0,Math.PI*2)
+		//}
 		ctx.fill()
 		ctx.stroke()
 	}
 	
 	//center points
+	ctx.lineWidth=0.5
 	ctx.fillStyle='#fff'
 	for(i=0;i<centerPoints.length;i++){
 		ctx.beginPath()
-		ctx.arc(centerPoints[i].X*grid*sf*gridSpace,0-centerPoints[i].Y*grid*sf*gridSpace,2,0,Math.PI*2)
+		ctx.arc(centerPoints[i].X*grid*sf*gridSpace,0-centerPoints[i].Y*grid*sf*gridSpace,1,0,Math.PI*2)
+		ctx.fill()
+		ctx.stroke()
+	}
+
+	//snapPts points
+	ctx.fillStyle='#fff'
+	for(i=0;i<snapPts.length;i++){
+		ctx.beginPath()
+		ctx.arc(snapPts[i].X*grid*sf*gridSpace,0-snapPts[i].Y*grid*sf*gridSpace,1,0,Math.PI*2)
 		ctx.fill()
 		ctx.stroke()
 	}
@@ -330,9 +348,7 @@ function draw(){
 	ctx.strokeStyle='#333'
 	ctx.moveTo(mouseX,mouseY)
 	ctx.arc(mouseX,mouseY,3,0,Math.PI*2)
-	
-
-	
+		
 	if(lines.length>0){
 		if(lines[lines.length-1].length==2){
 			ctx.moveTo(point[0]*sf*gridSpace,0-point[1]*sf*gridSpace)
@@ -381,8 +397,8 @@ function draw(){
 
 function makeDim(x1,y1,x2,y2,space,dx,dy){
 
-	ctx.strokeStyle = '#bb0000'
-	ctx.fillStyle = "#bb0000"
+	ctx.strokeStyle = '#000'
+	ctx.fillStyle = "#333"
 	ctx.font = "11px Arial"
 	ctx.beginPath()
 
@@ -435,8 +451,10 @@ function makeDim(x1,y1,x2,y2,space,dx,dy){
 	ctx.fillText(y,(y1+y2/2)-(ctx.measureText(y).width/2),0-((x1+x2)+space+2))
 	ctx.rotate(-Math.PI/2)
 
+
+
 	}
 
-	ctx.stroke()
+	ctx.stroke()	
 
 }
