@@ -195,7 +195,7 @@ function draw(){
 	}
 
 	//polygons
-	ctx.lineWidth=3
+	ctx.lineWidth=2
 	if(close==true){
 		ctx.strokeStyle='#dd00dd'
 	}
@@ -216,7 +216,7 @@ function draw(){
 
 	//inside
 
-	ctx.lineWidth=3
+	ctx.lineWidth=2
 	ctx.strokeStyle='#800080'
 	for(i=0;i<insidePolygons.length;i++){
 

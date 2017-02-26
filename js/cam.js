@@ -36,9 +36,6 @@ function cutOut(out){
 
 }
 
-
-
-
 function pocket(){
 
 	cutout=[]
@@ -86,8 +83,6 @@ function pocket(){
 	pockets.reverse()
 
 	ClipperLib.JS.ScaleDownPaths(pockets, scale)
-
-	//sort
 
 	console.log(pockets)
 

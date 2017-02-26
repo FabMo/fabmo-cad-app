@@ -99,7 +99,7 @@ var toolpath
 var help="\
 FabMo CAD<br>\n\
 author: Jonathan Ward<br>\n\
-www.github.com/fabmo/fabo-cad-app<br>\n\n\
+www.github.com/fabmo/fabmo-cad-app<br>\n\n\
 arc \'x\',\'y\',\'r\',\'a1\',\'a2\'<br>\n\
 calc (eval)<br>\n\
 chamfer (toggle chamfer)<br>\n\

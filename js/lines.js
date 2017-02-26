@@ -1,5 +1,3 @@
-//push endpoints + line[#]
-
 
 function arc(pts){
 
