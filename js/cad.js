@@ -418,7 +418,7 @@ function runCmd(cmd){
 	}
 	else if(cmd=="macro"){
 
-		if(document.getElementById('macro').style.display=='inline'){			
+		if(document.getElementById('macro').style.display.substring(0,6)=='inline'){			
 			$("#macro").hide(400)
 			$("#runmacro").hide(200)
 			cmd='hide macro'

@@ -34,10 +34,9 @@ function circle(pts){
 		v=Math.ceil((r/grid)*2*Math.PI*100)
 	}
 	else{
-		v=Math.ceil((r/grid)*2*Math.PI*30)
+		v=Math.ceil((r/grid)*2*Math.PI*10)
 	}
-	console.log(v)
-	v=10
+	//console.log(v)
 
 	lines.push([])
 	for(i=0;i<=v;i++){

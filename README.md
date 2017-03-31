@@ -1,20 +1,18 @@
-#FabMo CAD  
+# FabMo CAD  
 
-##Overview
+## Overview
 
 FabMo CAD is a web app for drawing simple shapes in a browser and creating cut files for [ShopBot](https://shopbottools.com) tools and 3 axis CNC routers that run standard G-code.   
 [LIVE DEMO](http://gofabmo.org/fabmo-cad-app)   
 
-![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/crab_cad.png)
-
-##Download
+## Download
 
 [FabMo CAD APP](https://github.com/FabMo/fabmo-cad-app/releases/download/v0.1.6/CAD_v0.1.6.fma)
 
 
-##Examples
+## Examples
 
-###Drawing Commands
+### Drawing Commands
 
 These commands will draw and toolpath a simple pocket.
 
@@ -27,7 +25,7 @@ These commands will draw and toolpath a simple pocket.
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad1.png)
 
-###Simple Press-Fit Joint
+### Simple Press-Fit Joint
 
 This project is designed for machining plywood with a material thickness slightly less than 1/4" (~0.248") and using a 1/8" endmill to make a simple press-fit joint. 
 
@@ -50,7 +48,7 @@ makeg
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad2.png)  
 
-###Macros
+### Macros
 
 The `macro` command will show/hide the macro text area.  
 Copy and paste the commands below into the macro text area and then click the 'run' button or enter the `runmacro` command.  
@@ -63,7 +61,7 @@ arc2,2,1,90,270
 cutout
 ```
 
-####Toolpath Commands
+#### Toolpath Commands
 
 `cutin` (cut in toolpath)  
 `cutout` (cut out toolpath)  
@@ -76,13 +74,13 @@ cutout
 `makeg` (download gcode)  
 `makedxf` (download dxf)  
 
-###Drill Points
+### Drill Points
 
 A click on the same point twice or the `drillx,y` command will insert a drill point.  
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad4.png)  
 
-###Dimensions & Units
+### Dimensions & Units
 
 The `dim` command will show/hide drawing dimensions.  
 The default units are inches and degrees. The length unit can be changed to millimeter by entering this command: `unit=mm`  The grid space can be set with the command `grid=2` to change the grid space to 2mm.  
@@ -90,7 +88,7 @@ The default units are inches and degrees. The length unit can be changed to mill
 
 ![cad](https://raw.github.com/FabMo/fabmo-cad-app/master/img/cad3.png)  
 
-##Default Settings
+## Default Settings
 
 tool diameter: 0.125"  
 pass depth: tool diameter  
@@ -104,14 +102,14 @@ grid: 0.25"
 
 The `settings` command will show current settings.  
 
-##Commands
+## Commands
 
 The `help` or `?` command will show all commands, and the up/down keys can be used to scroll through command history.
 
-###Drawing
+### Drawing
 
 
-####shapes
+#### shapes
 
 `arc'x','y','r','a1','a2'`  
 `circle'x','y','r'`  
@@ -124,20 +122,20 @@ The `help` or `?` command will show all commands, and the up/down keys can be us
 `rect'x','y','lx','ly'`  
 `star'x','y','r'`  
 
-####features
+#### features
 
 `chamfer` toggle chamfer=(true/false)  
 `dogbone` make dog-bone fillets  
 `fillet` toggle fillet=(true/false)  
 
-####transforms
+#### transforms
 
 `move'x','y'` translate all  
 `movelast'x','y'` translate last shape/line  
 `rotate'a'` rotate all  
 `rotatelast'a'` rotate last shape/line  
 
-###Settings
+### Settings
 
 `cutdepth='z'`  
 `dogbone= '1','-1'or'0'` (0=none)  
@@ -152,7 +150,7 @@ The `help` or `?` command will show all commands, and the up/down keys can be us
 `tool='diameter'` (inch)  
 `unit='length unit'` ('inch' or 'mm')  
 
-###Tools
+### Tools
 
 `calc` evaluate (e.g. `calc5/25.4`)  
 `clear` new drawing  
