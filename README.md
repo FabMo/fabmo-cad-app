@@ -68,7 +68,7 @@ cutout
 `drillx,y` (insert drill point @ x,y)  
 `pocket` (pocket toolpath)  
 
-####Make Commands
+#### Make Commands
 
 `makesbp` (download ShopBot program)  
 `makeg` (download gcode)  
